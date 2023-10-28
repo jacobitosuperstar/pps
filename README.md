@@ -1,2 +1,3 @@
-# production_planing_and_programming
-Software for planning and managing a production line
+# Production and Planning Software
+
+Software for planning and managing a simple production line
