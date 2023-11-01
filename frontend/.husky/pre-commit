@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo ""
+echo "Usar estandar para commits @commitlint/config-conventional https://github.com/conventional-changelog/commitlint"
+echo ""
+echo "guia de emojis de estado https://gitmoji.dev/"

@@ -35,6 +35,20 @@ services:
       - database
     networks:
       - server_network
+  # Frontend App
+  app:
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - server_network
+    volumes:
+      -"./frontend/:/app/frontend"
+    depends_on:
+      - database
+      - web
   # Database
   database:
     image: postgres
