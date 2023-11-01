@@ -8,13 +8,22 @@ services:
   web:
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./backend/Dockerfile
+    expose:
+      - "8000"
     ports:
-      - 8000:8000
+      - "8000:8000"
     volumes:
-      - .:/app
+      - ./backend/:/app
+    env_file:
+      - ./pps.env
     environment:
-      - DJANGO_SECRET_KEY=your_secret_key_here
+      - DEBUG=${DEBUG:-true}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - SERVER_HOSTNAME=${SERVER_HOSTNAME}
+      - POSTGRES_DB=${POSTGRES_DB:-postgress}
+      - POSTGRES_USER=${POSTGRES_USER:-postgress}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgress}
     command: >
       sh -c "
       python manage.py makemigrations &&
@@ -29,10 +38,12 @@ services:
   # Database
   database:
     image: postgres
+    env_file:
+      - ./pps.env
     environment:
-      - POSTGRES_DB=postgress
-      - POSTGRES_USER=postgress
-      - POSTGRES_PASSWORD=postgress
+      - POSTGRES_DB=${POSTGRES_DB:-postgress}
+      - POSTGRES_USER=${POSTGRES_USER:-postgress}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgress}
     expose:
       - "5432"
     ports:
