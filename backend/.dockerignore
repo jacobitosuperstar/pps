@@ -1,0 +1,7 @@
+*
+!Pipfile*
+!manage.py
+!employees/
+!machines/
+!products/
+!server/
