@@ -14,13 +14,13 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend/:/app
+      - ./backend/:/app/
     env_file:
       - ./pps.env
     environment:
       - DEBUG=${DEBUG:-true}
-      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-      - SERVER_HOSTNAME=${SERVER_HOSTNAME}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-}
+      - SERVER_HOSTNAME=${SERVER_HOSTNAME:-database}
       - POSTGRES_DB=${POSTGRES_DB:-postgress}
       - POSTGRES_USER=${POSTGRES_USER:-postgress}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgress}
@@ -45,7 +45,11 @@ services:
     networks:
       - server_network
     volumes:
-      -"./frontend/:/app/frontend"
+      - ./frontend/:/app/
+    command: >
+      sh -c "
+      npm dev
+      "
     depends_on:
       - database
       - web
