@@ -17,7 +17,7 @@ RUN python -m pip install --upgrade pip \
     && pip install pipenv
 
 # Copy only the Pipfile and install dependencies
-COPY ./Pipfile* /app/
+COPY ./backend/Pipfile* /app/
 RUN pipenv install --system --deploy
 
 # Copy only necessary files and directories

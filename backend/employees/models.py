@@ -169,12 +169,12 @@ class OOOTypes(models.TextChoices):
     >>> employee_ooo = EmployeeOOO.objects.get(employee=employee)
     >>> print(employee_ooo.type)
     """
-    PL = "paid_leave", "paid leave"
-    NPL = "non_paid_leave", "non paid leave"
-    WA = "work_accident", "work accident"
-    NWA = "non_work_accident", "non_work_accident"
-    PP = "paid_permit", "paid permit"
-    NPP = "non_paid_permit", "non paid permit"
+    PL = "paid_leave", _("paid leave")
+    NPL = "non_paid_leave", _("non paid leave")
+    WA = "work_accident", _("work accident")
+    NWA = "non_work_accident", _("non_work_accident")
+    PP = "paid_permit", _("paid permit")
+    NPP = "non_paid_permit", _("non paid permit")
 
 
 class OOO(models.Model):
@@ -211,10 +211,11 @@ class OOO(models.Model):
         verbose_name = ("out of office")
         verbose_name_plural = ("out of office")
 
-    def __str__(self):
+    def __str__(self: "OOO") -> str:
         msg = (
             f"Employee: {self.employee}, "
             f"OOO type: {self.ooo_type}, "
             f"starting date: {self.start_date}, "
             f"ending date: {self.end_date}."
         )
+        return msg
