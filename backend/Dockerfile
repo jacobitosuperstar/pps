@@ -10,18 +10,18 @@ ENV PYTHONUNBUFFERED 1
 ENV PIPENV_VENV_IN_PROJECT=1
 
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /app/
 
 # Install pipenv
 RUN python -m pip install --upgrade pip \
     && pip install pipenv
 
 # Copy only the Pipfile and install dependencies
-COPY ./backend/Pipfile* /app/
+COPY ./backend/Pipfile* .
 RUN pipenv install --system --deploy
 
 # Copy only necessary files and directories
-COPY . /app/
+COPY ./backend/ .
 
 # Exposing the port
 EXPOSE 8000
