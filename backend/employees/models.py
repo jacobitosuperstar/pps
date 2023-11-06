@@ -5,6 +5,7 @@ from typing import (
     Optional,
     Dict,
 )
+from django.utils.translation import gettext as _
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
@@ -20,12 +21,12 @@ class RoleChoices(models.TextChoices):
     >>> employee = Employee.objects.get(identification=identification)
     >>> print(employee.role == RoleChoices.EMPLOYEE)
     """
-    MANAGEMENT = "management", "management"
-    HR = "hr", "human resources"
-    QUALITY = "quality", "quality"
-    PRODUCTION_MANAGER = "prod_manager", "production manager"
-    PRODUCTION = "prod", "production"
-    ACCOUNTING = "accounting", "accounting"
+    MANAGEMENT = "management", _("management")
+    HR = "hr", _("human resources")
+    QUALITY = "quality", _("quality")
+    PRODUCTION_MANAGER = "prod_manager", _("production manager")
+    PRODUCTION = "prod", _("production")
+    ACCOUNTING = "accounting", _("accounting")
 
 
 class EmployessManager(BaseUserManager):
@@ -35,9 +36,9 @@ class EmployessManager(BaseUserManager):
         self,
         identification: str,
         names: str,
-        lastnames: str,
-        password: str,
+        last_names: str,
         birthday: Optional[str] = None,
+        password: Optional[str] = None,
         **extra_fields: Optional[Dict[str, Any]]
     ):
         """Creates an Employee.
@@ -46,19 +47,22 @@ class EmployessManager(BaseUserManager):
             raise ValueError(_("Employee must have an identification."))
         if not names:
             raise ValueError(_("Employee must have a name."))
-        if not lastnames:
+        if not last_names:
             raise ValueError(_("Employee must have a last name."))
-        if not password:
+        if extra_fields.get("role") != RoleChoices.PRODUCTION and not password:
             raise ValueError(_('A password must be provided.'))
 
         user = self.model(
             identification=identification,
             names=names,
-            lastnames=lastnames,
+            last_names=last_names,
             birthday=birthday,
             **extra_fields,
         )
-        user.set_password(password)
+
+        if password:
+            user.set_password(password)
+
         user.save()
         return user
 
@@ -66,7 +70,7 @@ class EmployessManager(BaseUserManager):
         self,
         identification: str,
         names: str,
-        lastnames: str,
+        last_names: str,
         password: str,
         **extra_fields: Dict[str, Any]
     ):
@@ -85,10 +89,11 @@ class EmployessManager(BaseUserManager):
             raise ValueError(_("Superuser must have the management role."))
 
         user = self.create_user(
-            identification,
-            names,
-            lastnames,
-            password,
+            identification=identification,
+            names=names,
+            last_names=last_names,
+            password=password,
+            birthday=None,
             **extra_fields
         )
         return user
@@ -107,7 +112,6 @@ class Employee(AbstractBaseUser):
     )
     names = models.CharField(
         max_length=100,
-        unique=True,
         blank=False,
         null=False,
         verbose_name=_("employee names"),
@@ -117,12 +121,11 @@ class Employee(AbstractBaseUser):
         max_length=100,
         blank=False,
         null=False,
-        unique=True,
         verbose_name=_("employee last names"),
         help_text=_("employee's lastnames")
     )
     role = models.CharField(
-        max_length=120,
+        max_length=20,
         choices=RoleChoices,
         default=RoleChoices.PRODUCTION,
         verbose_name=_("role"),
@@ -159,6 +162,7 @@ class Employee(AbstractBaseUser):
     def __str__(self):
         return f"{self.identification}, {self.role}"
 
+
 class OOOTypes(models.TextChoices):
     """TextChoices class to store the different types of OOO currently on the
     app, where are defined both the value on the database and the human redable
@@ -186,7 +190,7 @@ class OOO(models.Model):
         verbose_name=_("employee"),
     )
     ooo_type = models.CharField(
-        max_length=50,
+        max_length=20,
         choices=OOOTypes,
         blank=False,
         null=False,
@@ -208,8 +212,8 @@ class OOO(models.Model):
 
     class Meta:
         db_table = "ooo"
-        verbose_name = ("out of office")
-        verbose_name_plural = ("out of office")
+        verbose_name = _("out of office")
+        verbose_name_plural = _("out of office")
 
     def __str__(self: "OOO") -> str:
         msg = (
