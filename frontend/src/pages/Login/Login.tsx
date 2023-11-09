@@ -44,7 +44,6 @@ const Login = () => {
 
   // methods
   const onSubmit = (formData: FormData) => {
-    console.log(formData);
     // TODO: change payload
     dispatch(loginUser(1));
   };
