@@ -10,6 +10,8 @@ from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
+from base.models import BaseModel
+
 
 class RoleChoices(models.TextChoices):
     """TextChoices class to store the different roles currently on the app,
@@ -27,6 +29,9 @@ class RoleChoices(models.TextChoices):
     PRODUCTION_MANAGER = "prod_manager", _("production manager")
     PRODUCTION = "prod", _("production")
     ACCOUNTING = "accounting", _("accounting")
+
+
+RoleChoices_dict = {value: label for value, label in RoleChoices.choices}
 
 
 class EmployessManager(BaseUserManager):
@@ -99,9 +104,17 @@ class EmployessManager(BaseUserManager):
         return user
 
 
-class Employee(AbstractBaseUser):
+class Employee(AbstractBaseUser, BaseModel):
     """Custom user model for the application.
     """
+    PRIVATE_FIELDS = [
+        "id",
+        "password",
+        "is_active",
+        "is_staff",
+        "is_superuser",
+    ]
+
     identification = models.CharField(
         max_length=50,
         blank=False,
@@ -126,10 +139,10 @@ class Employee(AbstractBaseUser):
     )
     role = models.CharField(
         max_length=20,
-        choices=RoleChoices,
+        choices=RoleChoices.choices,
         default=RoleChoices.PRODUCTION,
         verbose_name=_("role"),
-        help_test=_("employee role"),
+        help_text=_("employee role"),
     )
     birthday = models.DateField(
         blank=False,
@@ -147,7 +160,7 @@ class Employee(AbstractBaseUser):
     )
     is_active = models.BooleanField(default=True,)
     is_staff = models.BooleanField(default=False,)
-    is_admin = models.BooleanField(default=False,)
+    is_superuser = models.BooleanField(default=False,)
 
     USERNAME_FIELD = "identification"
     REQUIRED_FIELDS = ["names", "last_names"]
@@ -181,21 +194,28 @@ class OOOTypes(models.TextChoices):
     NPP = "non_paid_permit", _("non paid permit")
 
 
-class OOO(models.Model):
+OOOTypes_dict = {value: label for value, label in OOOTypes.choices}
+
+
+class OOO(BaseModel):
     """Employee type of OOO.
     """
+    PRIVATE_FIELDS = [
+        "id",
+    ]
+
     employee = models.ForeignKey(
         Employee,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         verbose_name=_("employee"),
     )
     ooo_type = models.CharField(
         max_length=20,
-        choices=OOOTypes,
+        choices=OOOTypes.choices,
         blank=False,
         null=False,
         verbose_name=_("out of office"),
-        help_test=_("out of office time"),
+        help_text=_("out of office time"),
     )
     start_date = models.DateField(
         blank=False,

@@ -1,24 +1,17 @@
 from django import forms
+from django.core.validators import EMPTY_VALUES
 from .models import Employee, RoleChoices
 
 
-class EmployeeAuthenticationForm(forms.ModelForm):
+class EmployeeAuthenticationForm(forms.Form):
     """Form to validate the log in information."""
     identification = forms.CharField(
         max_length=50,
         required=True,
     )
     password = forms.CharField(
-        widget=forms.PasswordInput
         required=True,
     )
-
-    class Meta:
-        model = Employee
-        fields = [
-            "identification",
-            "password",
-        ]
 
 
 class EmployeeCreationForm(forms.ModelForm):
@@ -42,7 +35,8 @@ class EmployeeCreationForm(forms.ModelForm):
         required=False,
     )
     role = forms.ChoiceField(
-        choices=RoleChoices,
+        choices=RoleChoices.choices,
+        initial=RoleChoices.PRODUCTION,
         required=True,
     )
 
@@ -57,7 +51,7 @@ class EmployeeCreationForm(forms.ModelForm):
         ]
 
 
-class EmployeeForm(forms.ModelForm):
+class EmployeeForm(forms.Form):
     """Form to validate that the information send for the user filterin is
     valid.
     """
@@ -82,6 +76,3 @@ class EmployeeForm(forms.ModelForm):
         required=False,
     )
     is_active = forms.BooleanField(required=False,)
-
-    class Meta:
-        model = Employee

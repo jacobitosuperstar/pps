@@ -4,38 +4,48 @@ from . import views
 
 urlpatterns = [
     path(
+        "roles/",
+        views.employee_roles_view,
+        name="roles"
+    ),
+    path(
+        "ooo_types/",
+        views.employee_ooo_types_view,
+        name="ooo_types"
+    ),
+    path(
         "login/",
-        views.EmployeeLogInView.as_view({"post": "employee_login"}),
+        views.employee_login_view,
         name="login"
     ),
     path(
         "logout/",
-        views.EmployeeLogInView.as_view({"get": "employee_logout"}),
+        views.employee_logout_view,
         name="logout"
     ),
     path(
-        "/",
-        views.EmployeeCRUDView.as_view({"get": "get_employees"}),
-        name="get_employees"
+        "",
+        views.list_employees_view,
+        name="list_employees"
     ),
     path(
         "create/",
-        views.EmployeeCRUDView.as_view({"post": "create_employee"}),
-        name="create_employees"
+        views.create_employee_view,
+        name="create_employee"
     ),
     path(
-        "<int:pk>/",
-        views.EmployeeCRUDView.as_view({"get": "get_employee"}),
+        "<str:cc>/",
+        views.get_employee_view,
         name="get_employee"
     ),
     path(
-        "<int:pk>/update/",
-        views.EmployeeCRUDView.as_view({"put": "update_employee"}),
+        "<str:cc>/update/",
+        views.update_employee_view,
         name="update_employee"
     ),
     path(
-        "<int:pk>/delete/",
-        views.EmployeeCRUDView.as_view({"delete": "delete_employee"}),
+        "<str:cc>/delete/",
+        views.delete_employee_view,
         name="delete_employee"
     ),
 ]
