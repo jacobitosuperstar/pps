@@ -31,7 +31,6 @@ class EmployeeCreationForm(forms.ModelForm):
         required=True,
     )
     birthday = forms.DateField(
-        empty_value=None,
         required=False,
     )
     role = forms.ChoiceField(
@@ -68,7 +67,6 @@ class EmployeeForm(forms.Form):
         required=False,
     )
     birthday = forms.DateField(
-        empty_value=None,
         required=False,
     )
     role = forms.ChoiceField(
