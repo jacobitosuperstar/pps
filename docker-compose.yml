@@ -4,8 +4,23 @@ networks:
   server_network:
 
 services:
-  # Website
-  web:
+  # Database
+  database:
+    image: postgres
+    env_file:
+      - ./pps.env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-postgress}
+      - POSTGRES_USER=${POSTGRES_USER:-postgress}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgress}
+    expose:
+      - "5432"
+    ports:
+      - "5432:5432"
+    networks:
+      - server_network
+  # Banckend
+  backend:
     build:
       context: .
       dockerfile: ./backend/Dockerfile
@@ -52,19 +67,6 @@ services:
       "
     depends_on:
       - database
-      - web
-  # Database
-  database:
-    image: postgres
-    env_file:
-      - ./pps.env
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB:-postgress}
-      - POSTGRES_USER=${POSTGRES_USER:-postgress}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgress}
-    expose:
-      - "5432"
-    ports:
-      - "5432:5432"
+      - backend
     networks:
       - server_network

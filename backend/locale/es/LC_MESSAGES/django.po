@@ -1,0 +1,159 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#: employees/models.py:110
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-11-05 17:35+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: employees/models.py:24
+msgid "management"
+msgstr "gerencia"
+
+#: employees/models.py:25
+msgid "human resources"
+msgstr "recursos humanos"
+
+#: employees/models.py:26
+msgid "quality"
+msgstr "calidad"
+
+#: employees/models.py:27
+msgid "production manager"
+msgstr "jefe de producción"
+
+#: employees/models.py:28
+msgid "production"
+msgstr "producción"
+
+#: employees/models.py:29
+msgid "accounting"
+msgstr "contabilidad"
+
+#: employees/models.py:47
+msgid "Employee must have an identification."
+msgstr "El empleado debe tener identificación"
+
+#: employees/models.py:49
+msgid "Employee must have a name."
+msgstr "El empleado debe tener un nombre"
+
+#: employees/models.py:51
+msgid "Employee must have a last name."
+msgstr "El empleado debe tener un apellido"
+
+#: employees/models.py:53
+msgid "A password must be provided."
+msgstr "Se debe de proporcionar una contraseña."
+
+#: employees/models.py:85
+msgid "Superuser must have is_staff=True."
+msgstr "El superusuario debe tener is_staff=True"
+
+#: employees/models.py:87
+msgid "Superuser must have is_superuser=True."
+msgstr "El superusuario debe tener is_superuser=True"
+
+#: employees/models.py:89
+msgid "Superuser must have the management role."
+msgstr "El superusuario debe tener rol de gerencia"
+
+#: employees/models.py:109
+msgid "identification"
+msgstr "identificación"
+
+#: employees/models.py:117
+msgid "employee names"
+msgstr "nombres del empleado"
+
+#: employees/models.py:118
+msgid "employee's names"
+msgstr "nombres del empleado"
+
+#: employees/models.py:125
+msgid "employee last names"
+msgstr "apellidos del empleado"
+
+#: employees/models.py:126
+msgid "employee's lastnames"
+msgstr "apellidos del empleado"
+
+#: employees/models.py:132
+msgid "role"
+msgstr "rol"
+
+#: employees/models.py:133
+msgid "employee role"
+msgstr "rol del empleado"
+
+#: employees/models.py:138
+msgid "birthday"
+msgstr "cumpleaños"
+
+#: employees/models.py:139
+msgid "birthday of the employee"
+msgstr "cumpleaños del empleado"
+
+#: employees/models.py:143
+msgid "Joining date"
+msgstr "Fecha de unión a la plataforma"
+
+#: employees/models.py:147
+msgid "Last Login"
+msgstr "Último logueo"
+
+#: employees/models.py:160 employees/models.py:191
+msgid "employee"
+msgstr "empleado"
+
+#: employees/models.py:161
+msgid "employees"
+msgstr "empleados"
+
+#: employees/models.py:177
+msgid "paid leave"
+msgstr "Vacaciones pagas"
+
+#: employees/models.py:178
+msgid "non paid leave"
+msgstr "Vacaciones no pagas"
+
+#: employees/models.py:179
+msgid "work accident"
+msgstr "Accidente de trabajo"
+
+#: employees/models.py:180
+msgid "non_work_accident"
+msgstr "Accidente no relacionado con el trabajo"
+
+#: employees/models.py:181
+msgid "paid permit"
+msgstr "permiso pago"
+
+#: employees/models.py:182
+msgid "non paid permit"
+msgstr "permiso no pago"
+
+#: employees/models.py:198 employees/models.py:216 employees/models.py:217
+msgid "out of office"
+msgstr "fuera de la oficina"
+
+#: employees/models.py:199
+msgid "out of office time"
+msgstr "tiempo fuera de la oficina"
+
+#: employees/views.py:59
+msgid "Error in the information given"
+msgstr "error en la información dada"

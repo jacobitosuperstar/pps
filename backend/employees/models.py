@@ -5,9 +5,12 @@ from typing import (
     Optional,
     Dict,
 )
+from django.utils.translation import gettext as _
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+
+from base.models import BaseModel
 
 
 class RoleChoices(models.TextChoices):
@@ -20,12 +23,15 @@ class RoleChoices(models.TextChoices):
     >>> employee = Employee.objects.get(identification=identification)
     >>> print(employee.role == RoleChoices.EMPLOYEE)
     """
-    MANAGEMENT = "management", "management"
-    HR = "hr", "human resources"
-    QUALITY = "quality", "quality"
-    PRODUCTION_MANAGER = "prod_manager", "production manager"
-    PRODUCTION = "prod", "production"
-    ACCOUNTING = "accounting", "accounting"
+    MANAGEMENT = "management", _("management")
+    HR = "hr", _("human resources")
+    QUALITY = "quality", _("quality")
+    PRODUCTION_MANAGER = "prod_manager", _("production manager")
+    PRODUCTION = "prod", _("production")
+    ACCOUNTING = "accounting", _("accounting")
+
+
+RoleChoices_dict = {value: label for value, label in RoleChoices.choices}
 
 
 class EmployessManager(BaseUserManager):
@@ -35,9 +41,9 @@ class EmployessManager(BaseUserManager):
         self,
         identification: str,
         names: str,
-        lastnames: str,
-        password: str,
+        last_names: str,
         birthday: Optional[str] = None,
+        password: Optional[str] = None,
         **extra_fields: Optional[Dict[str, Any]]
     ):
         """Creates an Employee.
@@ -46,19 +52,22 @@ class EmployessManager(BaseUserManager):
             raise ValueError(_("Employee must have an identification."))
         if not names:
             raise ValueError(_("Employee must have a name."))
-        if not lastnames:
+        if not last_names:
             raise ValueError(_("Employee must have a last name."))
-        if not password:
+        if extra_fields.get("role") != RoleChoices.PRODUCTION and not password:
             raise ValueError(_('A password must be provided.'))
 
         user = self.model(
             identification=identification,
             names=names,
-            lastnames=lastnames,
+            last_names=last_names,
             birthday=birthday,
             **extra_fields,
         )
-        user.set_password(password)
+
+        if password:
+            user.set_password(password)
+
         user.save()
         return user
 
@@ -66,7 +75,7 @@ class EmployessManager(BaseUserManager):
         self,
         identification: str,
         names: str,
-        lastnames: str,
+        last_names: str,
         password: str,
         **extra_fields: Dict[str, Any]
     ):
@@ -85,18 +94,27 @@ class EmployessManager(BaseUserManager):
             raise ValueError(_("Superuser must have the management role."))
 
         user = self.create_user(
-            identification,
-            names,
-            lastnames,
-            password,
+            identification=identification,
+            names=names,
+            last_names=last_names,
+            password=password,
+            birthday=None,
             **extra_fields
         )
         return user
 
 
-class Employee(AbstractBaseUser):
+class Employee(AbstractBaseUser, BaseModel):
     """Custom user model for the application.
     """
+    PRIVATE_FIELDS = [
+        "id",
+        "password",
+        "is_active",
+        "is_staff",
+        "is_superuser",
+    ]
+
     identification = models.CharField(
         max_length=50,
         blank=False,
@@ -107,7 +125,6 @@ class Employee(AbstractBaseUser):
     )
     names = models.CharField(
         max_length=100,
-        unique=True,
         blank=False,
         null=False,
         verbose_name=_("employee names"),
@@ -117,16 +134,15 @@ class Employee(AbstractBaseUser):
         max_length=100,
         blank=False,
         null=False,
-        unique=True,
         verbose_name=_("employee last names"),
         help_text=_("employee's lastnames")
     )
     role = models.CharField(
-        max_length=120,
-        choices=RoleChoices,
+        max_length=20,
+        choices=RoleChoices.choices,
         default=RoleChoices.PRODUCTION,
         verbose_name=_("role"),
-        help_test=_("employee role"),
+        help_text=_("employee role"),
     )
     birthday = models.DateField(
         blank=False,
@@ -144,7 +160,7 @@ class Employee(AbstractBaseUser):
     )
     is_active = models.BooleanField(default=True,)
     is_staff = models.BooleanField(default=False,)
-    is_admin = models.BooleanField(default=False,)
+    is_superuser = models.BooleanField(default=False,)
 
     USERNAME_FIELD = "identification"
     REQUIRED_FIELDS = ["names", "last_names"]
@@ -158,6 +174,7 @@ class Employee(AbstractBaseUser):
 
     def __str__(self):
         return f"{self.identification}, {self.role}"
+
 
 class OOOTypes(models.TextChoices):
     """TextChoices class to store the different types of OOO currently on the
@@ -177,21 +194,28 @@ class OOOTypes(models.TextChoices):
     NPP = "non_paid_permit", _("non paid permit")
 
 
-class OOO(models.Model):
+OOOTypes_dict = {value: label for value, label in OOOTypes.choices}
+
+
+class OOO(BaseModel):
     """Employee type of OOO.
     """
+    PRIVATE_FIELDS = [
+        "id",
+    ]
+
     employee = models.ForeignKey(
         Employee,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         verbose_name=_("employee"),
     )
     ooo_type = models.CharField(
-        max_length=50,
-        choices=OOOTypes,
+        max_length=20,
+        choices=OOOTypes.choices,
         blank=False,
         null=False,
         verbose_name=_("out of office"),
-        help_test=_("out of office time"),
+        help_text=_("out of office time"),
     )
     start_date = models.DateField(
         blank=False,
@@ -208,8 +232,8 @@ class OOO(models.Model):
 
     class Meta:
         db_table = "ooo"
-        verbose_name = ("out of office")
-        verbose_name_plural = ("out of office")
+        verbose_name = _("out of office")
+        verbose_name_plural = _("out of office")
 
     def __str__(self: "OOO") -> str:
         msg = (
