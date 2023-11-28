@@ -21,10 +21,10 @@ to run the application locally, from the command line you can run the command
 background or detached from the terminal window, you can run the command
 `docker-compose up -d` or `docker-compose up --detach`.
 
-To run commands inside the `web` service container you can run this while the
+To run commands inside the `backend` service container you can run this while the
 application is running.
 
-`docker-compose exec web /bin/bash`
+`docker-compose exec backend /bin/bash`
 
 With this you will be able to be in the server environment and run magene
 commands if needed.
@@ -60,7 +60,7 @@ it can result in data loss if not used carefully.
 
 ## RUNNING THE TESTS
 
-To run the tests, you have to enter to the bash environment in the `web`
+To run the tests, you have to enter to the bash environment in the `backend`
 service, and now in that bash environment, check that you are in the correct
 folder, and run `python manage.py test` to execute all the tests, or if you
 want to run the tests of a single module you can run
