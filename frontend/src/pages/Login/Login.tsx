@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import LoginBgTeal from "@/assets/images/login-bg-teal.jpg";
+import LoginBgTeal from "@/assets/images/login-bg-teal.webp";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { Navigate } from "react-router-dom";
 import { PATHS } from "@/constants";
@@ -19,10 +19,11 @@ import { z } from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginUser } from "@/store/features/auth";
+import { useLoginMutation, usePinQuery } from "@/store/apis";
 
 const schema = z
   .object({
-    email: z.string().min(1, "Este campo es requerido").email("Email invalido"),
+    identification: z.string().min(1, "Este campo es requerido"),
     password: z.string().min(1, "Este campo es requerido"),
   })
   .required();
@@ -31,21 +32,30 @@ type FormData = z.infer<typeof schema>;
 
 const Login = () => {
   // redux
+  usePinQuery();
+  const [doLogin, loginContext] = useLoginMutation();
   const isAuthenticate = useAppSelector((state) => state.auth.isAuthenticate);
   const dispatch = useAppDispatch();
   // form control
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      email: "",
+      identification: "",
       password: "",
     },
   });
 
   // methods
-  const onSubmit = (formData: FormData) => {
-    // TODO: change payload
-    dispatch(loginUser(1));
+  const onSubmit = async (formData: FormData) => {
+    try {
+      const response = doLogin(formData).unwrap();
+
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+
+    // dispatch(loginUser(1));
   };
   // validate auth
   if (isAuthenticate) {
@@ -95,16 +105,16 @@ const Login = () => {
             sx={{ mt: 1 }}
           >
             <Controller
-              name="email"
+              name="identification"
               control={control}
               render={({ field, fieldState: { error } }) => (
                 <TextField
                   margin="normal"
                   required
                   fullWidth
-                  id="email"
-                  label="Dirección de email"
-                  autoComplete="email"
+                  id="identification"
+                  label="Identificación"
+                  type="text"
                   autoFocus
                   error={!!error}
                   helperText={error?.message}
