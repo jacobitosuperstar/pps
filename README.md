@@ -68,4 +68,15 @@ want to run the tests of a single module you can run
 
 ## EMPLOYEE
 
+There are different types of employee that we can create within the application
+and this are the ones that we have currently classified, with different roles:
+
+MANAGEMENT: leadership of the company. They can see everything but cannot
+interact with everything.
+HR: Human resources. All the employee and out of office creation and viewing.
+QUALITY:
+ACCOUNTING:
+PRODUCTION_MANAGER:
+PRODUCTION:
+
 [1]: https://www.docker.com

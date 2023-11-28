@@ -118,7 +118,7 @@ class AuthTokenWorkflowTest(TestCase):
             reverse(viewname="create_employee"),
             data=msg,
         )
-        print(response.content)
+        print(json.loads(response.content))
         self.assertEqual(response.status_code, status.created)
         print("\n")
 
@@ -148,6 +148,6 @@ class AuthTokenWorkflowTest(TestCase):
             reverse(viewname="create_employee"),
             data=msg,
         )
-        print(response.content)
+        print(json.loads(response.content))
         self.assertEqual(response.status_code, status.created)
         print("\n")
