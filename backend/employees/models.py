@@ -121,7 +121,7 @@ class Employee(AbstractBaseUser, BaseModel):
         null=False,
         unique=True,
         verbose_name=_("identification"),
-        help_text=_("")
+        help_text=_("documento de identidad")
     )
     names = models.CharField(
         max_length=100,

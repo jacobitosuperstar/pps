@@ -3,13 +3,12 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#: employees/models.py:110
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-05 17:35+0000\n"
+"POT-Creation-Date: 2023-11-28 02:13+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,142 +17,172 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-#: employees/models.py:24
+
+#: employees/forms.py:115 employees/views.py:145 employees/views.py:226
+msgid "Employee not found."
+msgstr ""
+
+#: employees/models.py:26
 msgid "management"
 msgstr "gerencia"
 
-#: employees/models.py:25
+#: employees/models.py:27
 msgid "human resources"
 msgstr "recursos humanos"
 
-#: employees/models.py:26
+#: employees/models.py:28
 msgid "quality"
 msgstr "calidad"
 
-#: employees/models.py:27
+#: employees/models.py:29
 msgid "production manager"
 msgstr "jefe de producción"
 
-#: employees/models.py:28
+#: employees/models.py:30
 msgid "production"
 msgstr "producción"
 
-#: employees/models.py:29
+#: employees/models.py:31
 msgid "accounting"
 msgstr "contabilidad"
 
-#: employees/models.py:47
+#: employees/models.py:52
 msgid "Employee must have an identification."
 msgstr "El empleado debe tener identificación"
 
-#: employees/models.py:49
+#: employees/models.py:54
 msgid "Employee must have a name."
 msgstr "El empleado debe tener un nombre"
 
-#: employees/models.py:51
+#: employees/models.py:56
 msgid "Employee must have a last name."
 msgstr "El empleado debe tener un apellido"
 
-#: employees/models.py:53
+#: employees/models.py:58
 msgid "A password must be provided."
 msgstr "Se debe de proporcionar una contraseña."
 
-#: employees/models.py:85
+#: employees/models.py:90
 msgid "Superuser must have is_staff=True."
 msgstr "El superusuario debe tener is_staff=True"
 
-#: employees/models.py:87
+#: employees/models.py:92
 msgid "Superuser must have is_superuser=True."
 msgstr "El superusuario debe tener is_superuser=True"
 
-#: employees/models.py:89
+#: employees/models.py:94
 msgid "Superuser must have the management role."
 msgstr "El superusuario debe tener rol de gerencia"
 
-#: employees/models.py:109
+#: employees/models.py:123
 msgid "identification"
 msgstr "identificación"
 
-#: employees/models.py:117
+#: employees/models.py:124
+msgid "documento de identidad"
+msgstr "documento de identidad"
+
+#: employees/models.py:130
 msgid "employee names"
 msgstr "nombres del empleado"
 
-#: employees/models.py:118
+#: employees/models.py:131
 msgid "employee's names"
 msgstr "nombres del empleado"
 
-#: employees/models.py:125
+#: employees/models.py:137
 msgid "employee last names"
 msgstr "apellidos del empleado"
 
-#: employees/models.py:126
+#: employees/models.py:138
 msgid "employee's lastnames"
 msgstr "apellidos del empleado"
 
-#: employees/models.py:132
+#: employees/models.py:144
 msgid "role"
 msgstr "rol"
 
-#: employees/models.py:133
+#: employees/models.py:145
 msgid "employee role"
 msgstr "rol del empleado"
 
-#: employees/models.py:138
+#: employees/models.py:150
 msgid "birthday"
 msgstr "cumpleaños"
 
-#: employees/models.py:139
+#: employees/models.py:151
 msgid "birthday of the employee"
 msgstr "cumpleaños del empleado"
 
-#: employees/models.py:143
+#: employees/models.py:155
 msgid "Joining date"
 msgstr "Fecha de unión a la plataforma"
 
-#: employees/models.py:147
+#: employees/models.py:159
 msgid "Last Login"
 msgstr "Último logueo"
 
-#: employees/models.py:160 employees/models.py:191
+#: employees/models.py:172 employees/models.py:210
 msgid "employee"
 msgstr "empleado"
 
-#: employees/models.py:161
+#: employees/models.py:173
 msgid "employees"
 msgstr "empleados"
 
-#: employees/models.py:177
+#: employees/models.py:189
 msgid "paid leave"
 msgstr "Vacaciones pagas"
 
-#: employees/models.py:178
+#: employees/models.py:190
 msgid "non paid leave"
 msgstr "Vacaciones no pagas"
 
-#: employees/models.py:179
+#: employees/models.py:191
 msgid "work accident"
 msgstr "Accidente de trabajo"
 
-#: employees/models.py:180
+#: employees/models.py:192
 msgid "non_work_accident"
 msgstr "Accidente no relacionado con el trabajo"
 
-#: employees/models.py:181
+#: employees/models.py:193
 msgid "paid permit"
 msgstr "permiso pago"
 
-#: employees/models.py:182
+#: employees/models.py:194
 msgid "non paid permit"
 msgstr "permiso no pago"
 
-#: employees/models.py:198 employees/models.py:216 employees/models.py:217
+#: employees/models.py:217 employees/models.py:235 employees/models.py:236
 msgid "out of office"
 msgstr "fuera de la oficina"
 
-#: employees/models.py:199
+#: employees/models.py:218
 msgid "out of office time"
 msgstr "tiempo fuera de la oficina"
 
-#: employees/views.py:59
+#: employees/views.py:60 employees/views.py:101 employees/views.py:164
+#: employees/views.py:205
 msgid "Error in the information given"
 msgstr "error en la información dada"
+
+#: employees/views.py:73
+msgid "Invalid credentials, check the ID or the Password"
+msgstr "Credenciales inválidas, chequea el documento o la contraseña."
+
+#: employees/views.py:78
+msgid "Logged in successfully"
+msgstr "Logueado exitosamente."
+
+#: employees/views.py:86
+msgid "Logged out successfully"
+msgstr "Deslogueado exitosamente."
+
+#: employees/views.py:150 employees/views.py:231
+msgid "Internal server error."
+msgstr "Error interno del servidor"
+
+#: employees/views.py:221
+msgid "Employee deactivated successfully."
+msgstr "Empleado desactivado exitosamente."
