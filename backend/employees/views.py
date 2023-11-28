@@ -20,6 +20,7 @@ from base.http_status_codes import HTTP_STATUS as status
 from .models import (
     Employee,
     RoleChoices,
+    OOO,
     OOOTypes,
     RoleChoices_dict,
     OOOTypes_dict,
@@ -74,7 +75,7 @@ def employee_login_view(request: HttpRequest) -> JsonResponse:
         return JsonResponse(msg, status=status.bad_request)
 
     login(request, employee)
-    msg = {"response": "Logged in successfully"}
+    msg = {"response": _("Logged in successfully")}
     return JsonResponse(msg)
 
 
@@ -82,7 +83,7 @@ def employee_login_view(request: HttpRequest) -> JsonResponse:
 @login_required
 def employee_logout_view(request: HttpRequest) -> JsonResponse:
     logout(request)
-    msg = {"response": "Logged out successfully"}
+    msg = {"response": _("Logged out successfully")}
     return JsonResponse(msg)
 
 
@@ -220,7 +221,7 @@ def delete_employee_view(request: HttpRequest, cc: str) -> JsonResponse:
             "response": _("Employee deactivated successfully.")
         }
         return JsonResponse(msg, status=status.accepted)
-    except Employee.DoesNotExists:
+    except Employee.DoesNotExist:
         msg = {
             "response": _("Employee not found.")
         }
@@ -230,3 +231,10 @@ def delete_employee_view(request: HttpRequest, cc: str) -> JsonResponse:
             "response": _("Internal server error.")
         }
         return JsonResponse(msg, status=status.internal_server_error)
+
+
+@require_POST
+@login_required
+@role_validation(allowed_roles=[RoleChoices.HR])
+def create_ooo_view(request: HttpRequest) -> JsonResponse:
+    return JsonResponse({})
