@@ -1,8 +1,26 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+import logger from "redux-logger";
+import { authSlice, authPreloadState, authListener } from "./features/auth";
+import { authApi } from "./apis";
+import { sharedSlice } from "./features/shared";
 
 export const store = configureStore({
-  reducer: {},
+  reducer: {
+    [authSlice.name]: authSlice.reducer,
+    [authApi.reducerPath]: authApi.reducer,
+    //
+    [sharedSlice.name]: sharedSlice.reducer,
+  },
+  devTools: process.env.NODE_ENV !== "production",
+  preloadedState: {
+    auth: authPreloadState(),
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware()
+      .concat(authListener.middleware)
+      .concat(authApi.middleware)
+      .concat(logger),
 });
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
