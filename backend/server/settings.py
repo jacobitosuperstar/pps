@@ -156,7 +156,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
-SESSION_SAVE_EVERY_REQUEST = False
+CSRF_USE_SESSIONS = True
+SESSION_SAVE_EVERY_REQUEST = True
 
 # Security Expressions
 # Only true when using debug mode
