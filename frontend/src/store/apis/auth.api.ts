@@ -19,7 +19,7 @@ export const authApi = createApi({
     }),
     pin: builder.query<PinResponse, void>({
       query: () => ({
-        url: "/pin",
+        url: "/new_pin/",
       }),
     }),
   }),
