@@ -10,8 +10,8 @@ export const appBaseQuery = fetchBaseQuery({
     // Retrieve the CSRF token from the cookie
     const csrfToken = Cookies.get("csrftoken");
     // Set the CSRF token in the headers
-    headers.set("X-CSRFToken", csrfToken || "");
-    headers.set("Content-Type", "application/json");
+    headers.set("X-CSRFTOKEN", csrfToken || "");
+    headers.set("Content-type", "application/json");
 
     return headers;
   },
