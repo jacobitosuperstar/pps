@@ -149,3 +149,21 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+#---------#
+# COOKIES #
+#---------#
+
+SESION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+SESSION_SAVE_EVERY_REQUEST = False
+
+# Security Expressions
+# Only true when using debug mode
+if DEBUG:
+    SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+    SESSION_COOKIE_SECURE = False
+else:
+    SESSION_COOKIE_AGE = 1209600
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
