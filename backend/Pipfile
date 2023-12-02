@@ -8,6 +8,7 @@ gunicorn = "*"
 django = "==4.2"
 psycopg2-binary = "*"
 django-cors-headers = "*"
+pyjwt = "*"
 
 [dev-packages]
 ipython = "*"

@@ -19,11 +19,6 @@ urlpatterns = [
         name="login"
     ),
     path(
-        "logout/",
-        views.employee_logout_view,
-        name="logout"
-    ),
-    path(
         "",
         views.list_employees_view,
         name="list_employees"

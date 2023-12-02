@@ -45,13 +45,6 @@ class AuthTokenWorkflowTest(TestCase):
         self.assertEqual(response.status_code, status.ok)
         print("\n")
 
-    def test_log_out(self):
-        """Tets the state of the server.
-        """
-        response = self.client.get(reverse(viewname="logout"))
-        self.assertEqual(response.status_code, status.ok)
-        print("\n")
-
     def test_employee_roles(self):
         """Test to get all the employee roles
         """
@@ -76,7 +69,7 @@ class AuthTokenWorkflowTest(TestCase):
             for chunk in response.streaming_content:
                 print(json.loads(chunk))
         else:
-            print(json.loads(response.content, indent=4))
+            print(json.loads(response.content))
         print("\n")
 
     def test_get_empoloyee(self):

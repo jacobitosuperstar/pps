@@ -44,21 +44,21 @@ INSTALLED_APPS = [
     "base.apps.BaseConfig",
     "employees.apps.EmployeesConfig",
     # Third Party Apps
-    "corsheaders",
+    # "corsheaders",
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    # 'corsheaders.middleware.CorsMiddleware',
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ORIGIN_ALLOW_ALL = True
 # CORS_ORIGIN_ALLOW_ALL = False
 # CORS_ORIGIN_WHITELIST = (
 #   'http://localhost:8000',
@@ -149,22 +149,3 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-#---------#
-# COOKIES #
-#---------#
-
-SESION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
-CSRF_USE_SESSIONS = True
-SESSION_SAVE_EVERY_REQUEST = True
-
-# Security Expressions
-# Only true when using debug mode
-if DEBUG:
-    SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-    SESSION_COOKIE_SECURE = False
-else:
-    SESSION_COOKIE_AGE = 1209600
-    SESSION_COOKIE_SECURE = True
-    SESSION_COOKIE_HTTPONLY = True
