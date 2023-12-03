@@ -1,7 +1,6 @@
 import {
   Avatar,
   Box,
-  Button,
   Checkbox,
   FormControlLabel,
   Grid,
@@ -10,6 +9,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import LoadingButton from "@mui/lab/LoadingButton";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import LoginBgTeal from "@/assets/images/login-bg-teal.webp";
 import { useAppDispatch, useAppSelector } from "@/store";
@@ -19,7 +19,7 @@ import { z } from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginUser } from "@/store/features/auth";
-import { useLoginMutation, usePinQuery } from "@/store/apis";
+import { useLoginMutation } from "@/store/apis";
 
 const schema = z
   .object({
@@ -32,8 +32,8 @@ type FormData = z.infer<typeof schema>;
 
 const Login = () => {
   // redux
-  usePinQuery();
   const [doLogin, loginContext] = useLoginMutation();
+
   const isAuthenticate = useAppSelector((state) => state.auth.isAuthenticate);
   const dispatch = useAppDispatch();
   // form control
@@ -48,9 +48,9 @@ const Login = () => {
   // methods
   const onSubmit = async (formData: FormData) => {
     try {
-      const response = doLogin(formData).unwrap();
+      const response = await doLogin(formData).unwrap();
 
-      console.log(response);
+      dispatch(loginUser(response.token))
     } catch (error) {
       console.log(error);
     }
@@ -109,6 +109,7 @@ const Login = () => {
               control={control}
               render={({ field, fieldState: { error } }) => (
                 <TextField
+                  disabled={loginContext.isLoading}
                   margin="normal"
                   required
                   fullWidth
@@ -128,6 +129,7 @@ const Login = () => {
               control={control}
               render={({ field, fieldState: { error } }) => (
                 <TextField
+                  disabled={loginContext.isLoading}
                   margin="normal"
                   required
                   fullWidth
@@ -146,14 +148,15 @@ const Login = () => {
               control={<Checkbox value="remember" color="primary" />}
               label="Recuérdame"
             />
-            <Button
+            <LoadingButton
+              loading={loginContext.isLoading}
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
               Ingresar
-            </Button>
+            </LoadingButton>
             <Grid container>
               <Grid item xs>
                 <Link href="#" variant="body2">
