@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     "base.apps.BaseConfig",
     "employees.apps.EmployeesConfig",
     # Third Party Apps
-    # "corsheaders",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -55,14 +55,17 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
-# CORS_ORIGIN_ALLOW_ALL = True
-# CORS_ORIGIN_ALLOW_ALL = False
-# CORS_ORIGIN_WHITELIST = (
-#   'http://localhost:8000',
-# )
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
+
+CORS_ALLOWED_HEADERS = [
+    'Content-Type',
+    'Authorization',
+]
 
 ROOT_URLCONF = 'server.urls'
 AUTH_USER_MODEL = 'employees.Employee'
