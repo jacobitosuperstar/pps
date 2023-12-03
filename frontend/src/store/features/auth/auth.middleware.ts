@@ -23,7 +23,9 @@ authListener.startListening({
     // Can cancel other running instances
     listenerApi.cancelActiveListeners();
 
-    localStorage.removeItem(localstorageKeys.auth);
+    const { auth } = listenerApi.getState() as RootState;
+
+    localStorage.setItem(localstorageKeys.auth, JSON.stringify(auth));
   },
 });
 

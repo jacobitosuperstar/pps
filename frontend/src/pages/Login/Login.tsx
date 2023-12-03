@@ -20,11 +20,13 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginUser } from "@/store/features/auth";
 import { useLoginMutation } from "@/store/apis";
+import { useEffect } from "react";
 
 const schema = z
   .object({
     identification: z.string().min(1, "Este campo es requerido"),
     password: z.string().min(1, "Este campo es requerido"),
+    remenberMe: z.boolean(),
   })
   .required();
 
@@ -34,31 +36,50 @@ const Login = () => {
   // redux
   const [doLogin, loginContext] = useLoginMutation();
 
-  const isAuthenticate = useAppSelector((state) => state.auth.isAuthenticate);
   const dispatch = useAppDispatch();
+  const authState = useAppSelector((state) => state.auth);
   // form control
-  const { control, handleSubmit } = useForm<FormData>({
+  const { control, handleSubmit, setValue } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       identification: "",
       password: "",
+      remenberMe: false,
     },
   });
 
   // methods
   const onSubmit = async (formData: FormData) => {
     try {
+      let remenberedId = "";
+
+      if (formData.remenberMe) {
+        remenberedId = formData.identification;
+      } else {
+        remenberedId = "";
+      }
+
       const response = await doLogin(formData).unwrap();
 
-      dispatch(loginUser(response.token))
+      dispatch(
+        loginUser({
+          token: response.token,
+          remenberedId,
+        })
+      );
     } catch (error) {
       console.log(error);
     }
-
-    // dispatch(loginUser(1));
   };
+
+  // effects
+  useEffect(() => {
+    setValue("identification", authState.remenberedId);
+    setValue("remenberMe", !!authState.remenberedId);
+  }, []);
+
   // validate auth
-  if (isAuthenticate) {
+  if (authState.isAuthenticate) {
     return <Navigate to={PATHS.HOME}></Navigate>;
   }
 
@@ -144,10 +165,24 @@ const Login = () => {
               )}
             />
 
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Recuérdame"
+            <Controller
+              name="remenberMe"
+              control={control}
+              render={({ field }) => (
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      color="primary"
+                      onChange={(e) => field.onChange(e.target.checked)}
+                      onBlur={(e) => field.onBlur(e.target.checked)}
+                      checked={field.value}
+                    />
+                  }
+                  label="Recuérdame"
+                />
+              )}
             />
+
             <LoadingButton
               loading={loginContext.isLoading}
               type="submit"
