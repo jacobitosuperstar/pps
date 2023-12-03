@@ -13,10 +13,13 @@ from django.views.decorators.http import (
     require_POST,
 )
 from django.db.models import Q
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate
 from django.http import JsonResponse
 from base.http_status_codes import HTTP_STATUS as status
+
+from jwt_authentication.jwt_authentication import create_token
+from jwt_authentication.decorators import authenticated_user
+
 from .models import (
     Employee,
     RoleChoices,
@@ -36,6 +39,7 @@ from .decorators import (
 
 
 @require_GET
+@authenticated_user
 def employee_roles_view(request: HttpRequest) -> JsonResponse:
     """List of work roles for the different kind of employees.
     """
@@ -43,6 +47,7 @@ def employee_roles_view(request: HttpRequest) -> JsonResponse:
 
 
 @require_GET
+@authenticated_user
 def employee_ooo_types_view(request: HttpRequest) -> JsonResponse:
     """List of work roles for the different kind of employees.
     """
@@ -74,21 +79,20 @@ def employee_login_view(request: HttpRequest) -> JsonResponse:
         }
         return JsonResponse(msg, status=status.bad_request)
 
-    login(request, employee)
-    msg = {"response": _("Logged in successfully")}
+    token = create_token(
+        employee_id=employee.id,
+        employee_role=employee.role,
+    )
+
+    msg = {
+        "response": _("Logged in successfully"),
+        "token": token,
+    }
     return JsonResponse(msg)
 
 
 @require_GET
-@login_required
-def employee_logout_view(request: HttpRequest) -> JsonResponse:
-    logout(request)
-    msg = {"response": _("Logged out successfully")}
-    return JsonResponse(msg)
-
-
-@require_GET
-@login_required
+@authenticated_user
 @role_validation(allowed_roles=[RoleChoices.HR, RoleChoices.MANAGEMENT])
 def list_employees_view(
     request: HttpRequest
@@ -133,7 +137,7 @@ def list_employees_view(
 
 
 @require_GET
-@login_required
+@authenticated_user
 @role_validation(allowed_roles=[RoleChoices.HR, RoleChoices.MANAGEMENT,])
 def get_employee_view(request: HttpRequest, cc: str) -> JsonResponse:
     """GETs the searched employee."""
@@ -153,7 +157,7 @@ def get_employee_view(request: HttpRequest, cc: str) -> JsonResponse:
 
 
 @require_POST
-@login_required
+@authenticated_user
 @role_validation(allowed_roles=[RoleChoices.HR])
 def create_employee_view(request: HttpRequest) -> JsonResponse:
     """CREATES the employee."""
@@ -195,7 +199,7 @@ def create_employee_view(request: HttpRequest) -> JsonResponse:
 
 
 @require_http_methods(["PATCH"])
-@login_required
+@authenticated_user
 @role_validation(allowed_roles=[RoleChoices.HR])
 def update_employee_view(request: HttpRequest, cc: str) -> JsonResponse:
     """UPDATES the employee"""
@@ -209,7 +213,7 @@ def update_employee_view(request: HttpRequest, cc: str) -> JsonResponse:
 
 
 @require_http_methods(["DELETE"])
-@login_required
+@authenticated_user
 @role_validation(allowed_roles=[RoleChoices.HR])
 def delete_employee_view(request: HttpRequest, cc: str) -> JsonResponse:
     """DELETES the employee"""
@@ -234,7 +238,7 @@ def delete_employee_view(request: HttpRequest, cc: str) -> JsonResponse:
 
 
 @require_POST
-@login_required
+@authenticated_user
 @role_validation(allowed_roles=[RoleChoices.HR])
 def create_ooo_view(request: HttpRequest) -> JsonResponse:
     return JsonResponse({})

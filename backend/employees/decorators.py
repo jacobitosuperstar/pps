@@ -24,9 +24,9 @@ def role_validation(
         **kwargs,
     ) -> Union[Callable, JsonResponse]:
         # getting the user from the request
-        user: Employee = request.user
+        token_payload = request.token_payload
         # checking the role
-        if user.role not in allowed_roles:
+        if token_payload.get("employee_role") not in allowed_roles:
             msg = {"response": "Role not allowed to do this operation"}
             response = JsonResponse(msg, status=status.forbidden)
             return response
