@@ -61,7 +61,7 @@ class EmployeeForm(forms.Form):
     """
     identification = forms.CharField(
         max_length=50,
-        required=True,
+        required=False,
     )
     names = forms.CharField(
         max_length=100,
