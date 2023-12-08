@@ -1,4 +1,4 @@
-export interface Roles {
+export interface RolesObject {
   accounting: string;
   hr: string;
   management: string;
@@ -7,6 +7,10 @@ export interface Roles {
   quality: string;
 }
 
+export interface Role {
+  id: keyof RolesObject;
+  name: string;
+}
 export interface Employee {
   birthday: string | null;
   created_at: string;
@@ -16,7 +20,7 @@ export interface Employee {
   last_login: string;
   last_names: string;
   names: string;
-  role: keyof Roles;
+  role: keyof RolesObject;
   updated_at: string;
 }
 

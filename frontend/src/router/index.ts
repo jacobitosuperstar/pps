@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
-import { HomeRoute } from "./HomeRoute";
-import { LoginRoute } from "./LoginRoute";
-import { EmployeesRoute } from "./EmployeesRoute";
+import { HomeRoute } from "./home.route";
+import { LoginRoute } from "./login.route";
+import { EmployeesRoute } from "./employees.route";
 
 export const router = createBrowserRouter([
   HomeRoute,

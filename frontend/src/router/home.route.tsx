@@ -1,19 +1,19 @@
 import type { RouteObject } from "react-router-dom";
 import { PATHS } from "../constants";
+import HomePage from "../pages/home/home.page";
 import { AuthenticationValidator } from "@/components";
 import { MainLayout } from "@/layouts";
-import EmployeesPage from "@/pages/Employees/Employees";
 
-export const EmployeesRoute: RouteObject = {
+export const HomeRoute: RouteObject = {
   element: <AuthenticationValidator />,
   children: [
     {
       element: (
         <MainLayout>
-          <EmployeesPage />
+          <HomePage />
         </MainLayout>
       ),
-      path: PATHS.EMPLOYEES,
+      path: PATHS.HOME,
     },
   ],
 };

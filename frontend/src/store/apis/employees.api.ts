@@ -5,20 +5,37 @@ import {
   CreateEmployeeDto,
   CreateEmployeeResponse,
   Employee,
-  Roles,
+  Role,
+  RolesObject,
 } from "@/interfaces/employees.interface";
 
 export const employeesApi = createApi({
   reducerPath: "employeesApi",
   baseQuery: appBaseQuery,
+  tagTypes: ["employees"],
   endpoints: (builder) => ({
-    getRoles: builder.query<Roles, void>({
+    getRoles: builder.query<Role[], void>({
       query: () => "/employees/roles/",
+      transformResponse(response: RolesObject) {
+        if (!response) return [];
+
+        return Object.keys(response).map((x) => {
+          const key = x as keyof RolesObject;
+          return {
+            id: key,
+            name: response[key] as string,
+          };
+        });
+      },
     }),
     getEmployees: builder.query<Employee[], void>({
       query: () => ({
         url: "/employees/",
       }),
+      transformResponse(response: any) {
+        return response?.employess || [];
+      },
+      providesTags: ["employees"],
     }),
     createEmployee: builder.mutation<CreateEmployeeResponse, CreateEmployeeDto>(
       {
@@ -27,6 +44,7 @@ export const employeesApi = createApi({
           method: "POST",
           body: objectToFormData(body),
         }),
+        invalidatesTags: ["employees"],
       }
     ),
   }),

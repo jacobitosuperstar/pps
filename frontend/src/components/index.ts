@@ -1,3 +1,3 @@
-export { default as AppDrawer } from "./AppDrawer";
-export { default as AppNavbar } from "./AppNavbar";
-export { default as AuthenticationValidator } from "./AuthenticationValidator";
+export { default as AppDrawer } from "./app-drawer";
+export { default as AppNavbar } from "./app-navbar";
+export { default as AuthenticationValidator } from "./authentication-validator";

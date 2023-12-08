@@ -16,9 +16,11 @@ import AccessAlarmIcon from "@mui/icons-material/AccessAlarm";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { closeDrawer, openDrawer } from "@/store/features/shared";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const AppDrawerList = () => {
+  const location = useLocation();
+  // state
   const menuList = [
     { label: "Dashboard", icon: <PieChartIcon />, to: PATHS.HOME },
     { label: "Personal", icon: <PeopleIcon />, to: PATHS.EMPLOYEES },
@@ -44,8 +46,13 @@ const AppDrawerList = () => {
       </Toolbar>
       <Divider />
       <List>
-        {menuList.map((item, index) => (
-          <ListItemButton component={Link} to={item.to} key={item.label}>
+        {menuList.map((item) => (
+          <ListItemButton
+            selected={location.pathname === item.to}
+            component={Link}
+            to={item.to}
+            key={item.label}
+          >
             <ListItemIcon>{item.icon}</ListItemIcon>
             <ListItemText primary={item.label} />
           </ListItemButton>
