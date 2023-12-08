@@ -29,6 +29,8 @@ class AuthTokenWorkflowTest(TestCase):
             reverse(viewname="login"),
             data=msg,
         )
+        response = json.loads(response.content)
+        self.user_header = f"Token {response.get("token")}"
         return
 
     def test_pin(self):

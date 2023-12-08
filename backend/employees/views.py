@@ -32,6 +32,7 @@ from .forms import (
     EmployeeAuthenticationForm,
     EmployeeCreationForm,
     EmployeeForm,
+    OOOCreationForm,
 )
 from .decorators import (
     role_validation,
@@ -96,7 +97,7 @@ def employee_login_view(request: HttpRequest) -> JsonResponse:
 @role_validation(allowed_roles=[RoleChoices.HR, RoleChoices.MANAGEMENT])
 def list_employees_view(
     request: HttpRequest
-) -> Union[JsonResponse, StreamingHttpResponse]:
+) -> JsonResponse:
     """GETs the list of active employees in a stream."""
     form = EmployeeForm(request.GET)
 
@@ -128,12 +129,8 @@ def list_employees_view(
     if is_active:
         query &= Q(is_active=is_active)
 
-    def employee_stream():
-        """Streams the list of employees."""
-        for employee in employees:
-            yield json.dumps(employee.serializer())
-    response = StreamingHttpResponse(employee_stream(), status=status.ok)
-    return response
+    employees_list = [employee.serializer() for employee in employees]
+    return JsonResponse({"employess": employees_list})
 
 
 @require_GET
@@ -241,4 +238,19 @@ def delete_employee_view(request: HttpRequest, cc: str) -> JsonResponse:
 @authenticated_user
 @role_validation(allowed_roles=[RoleChoices.HR])
 def create_ooo_view(request: HttpRequest) -> JsonResponse:
-    return JsonResponse({})
+    form = OOOCreationForm(request.POST)
+
+    if not form.is_valid():
+        msg = {"response": _("Error in the information given"), }
+        return JsonResponse(msg, status=status.bad_request)
+
+    ooo_time = OOO(
+        employee=form.cleaned_data.get("employee"),
+        ooo_type=form.cleaned_data.get("ooo_type"),
+        start_date=form.cleaned_data.get("start_date"),
+        end_date=form.cleaned_data.get("end_date"),
+        description=form.cleaned_data.get("description"),
+    )
+    ooo_time.save()
+    msg = {"ooo_time": ooo_time.serializer()}
+    return JsonResponse(msg)

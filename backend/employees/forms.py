@@ -61,7 +61,7 @@ class EmployeeForm(forms.Form):
     """
     identification = forms.CharField(
         max_length=50,
-        required=True,
+        required=False,
     )
     names = forms.CharField(
         max_length=100,
@@ -94,17 +94,17 @@ class OOOCreationForm(forms.ModelForm):
     end_date = forms.DateField()
     description = forms.CharField()
 
-    class Meta:
-        model = OOO
-        fields = [
-            "employee_identification",
-            "ooo_type",
-            "start_date",
-            "end_date",
-            "description",
-        ]
+    # class Meta:
+    #     model = OOO
+    #     fields = [
+    #         "employee_identification",
+    #         "ooo_type",
+    #         "start_date",
+    #         "end_date",
+    #         "description",
+    #     ]
 
-    def clean_employee(self):
+    def clean_employee_identification(self):
         try:
             employee_identification = self.cleaned_data.get("employee_identification")
             employee = Employee.objects.get(
