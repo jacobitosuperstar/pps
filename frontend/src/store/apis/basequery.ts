@@ -9,7 +9,7 @@ export const appBaseQuery = fetchBaseQuery({
     const state = context.getState() as RootState;
     const token = state.auth.token;
 
-    headers.set("Authorization", "Bearer " + token);
+    headers.set("Authorization", "Token " + token);
 
     return headers;
   },

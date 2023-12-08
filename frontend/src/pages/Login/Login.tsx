@@ -32,7 +32,7 @@ const schema = z
 
 type FormData = z.infer<typeof schema>;
 
-const Login = () => {
+const LoginPage = () => {
   // redux
   const [doLogin, loginContext] = useLoginMutation();
 
@@ -42,8 +42,8 @@ const Login = () => {
   const { control, handleSubmit, setValue } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      identification: "",
-      password: "",
+      identification: "1111111111",
+      password: "AzQWsX09",
       remenberMe: false,
     },
   });
@@ -174,7 +174,7 @@ const Login = () => {
                     <Checkbox
                       color="primary"
                       onChange={(e) => field.onChange(e.target.checked)}
-                      onBlur={(e) => field.onBlur(e.target.checked)}
+                      onBlur={() => field.onBlur()}
                       checked={field.value}
                     />
                   }
@@ -211,4 +211,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default LoginPage;
