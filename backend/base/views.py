@@ -5,8 +5,9 @@ from django.http import (
 )
 from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now
+
+from jwt_authentication.decorators import authenticated_user
 
 
 
@@ -50,7 +51,7 @@ def pin_view(request: HttpRequest) -> JsonResponse:
 
 
 @require_GET
-@login_required
+@authenticated_user
 def logged_pin_view(request: HttpRequest) -> JsonResponse:
     """Server pining. To check that the server is alive and getting the csrf
     cookie.

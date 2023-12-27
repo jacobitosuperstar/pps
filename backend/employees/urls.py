@@ -24,9 +24,24 @@ urlpatterns = [
         name="list_employees"
     ),
     path(
-        "create/",
+        "create_employee/",
         views.create_employee_view,
         name="create_employee"
+    ),
+    path(
+        "create_ooo/",
+        views.create_ooo_view,
+        name="create_ooo"
+    ),
+    path(
+        "list_ooo/",
+        views.list_ooo_view,
+        name="list_ooo"
+    ),
+    path(
+        "delete_ooo/",
+        views.delete_ooo_view,
+        name="delete_ooo"
     ),
     path(
         "<str:cc>/",

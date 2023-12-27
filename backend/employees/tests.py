@@ -21,22 +21,26 @@ class AuthTokenWorkflowTest(TestCase):
             password="AzQWsX09",
         )
         self.admin_user.save()
+
         msg = {
             "identification": "1111111111",
             "password": "AzQWsX09",
         }
+
         response = self.client.post(
             reverse(viewname="login"),
             data=msg,
         )
         response = json.loads(response.content)
-        self.user_header = f"Token {response.get("token")}"
+        token = response.get("token")
+        self.client.defaults["HTTP_AUTHORIZATION"] = f"Token {token}"
         return
 
     def test_pin(self):
         """Tets the state of the server.
         """
-        response = self.client.get(reverse(viewname="pin"))
+        response = self.client.get(reverse(viewname="new_pin"))
+        print(response.content)
         self.assertEqual(response.status_code, status.ok)
         print("\n")
 
@@ -44,6 +48,7 @@ class AuthTokenWorkflowTest(TestCase):
         """Tets the state of the server.
         """
         response = self.client.get(reverse(viewname="logged_pin"))
+        print(response.content)
         self.assertEqual(response.status_code, status.ok)
         print("\n")
 
@@ -51,7 +56,6 @@ class AuthTokenWorkflowTest(TestCase):
         """Test to get all the employee roles
         """
         response = self.client.get(reverse(viewname="roles"))
-        print(json.loads(response.content))
         self.assertEqual(response.status_code, status.ok)
         print("\n")
 
@@ -59,7 +63,6 @@ class AuthTokenWorkflowTest(TestCase):
         """Test to get all the employee roles
         """
         response = self.client.get(reverse(viewname="ooo_types"))
-        print(json.loads(response.content))
         self.assertEqual(response.status_code, status.ok)
         print("\n")
 
@@ -67,11 +70,8 @@ class AuthTokenWorkflowTest(TestCase):
         """Test to get all the employess
         """
         response = self.client.get(reverse(viewname="list_employees"))
-        if response.status_code == status.ok:
-            for chunk in response.streaming_content:
-                print(json.loads(chunk))
-        else:
-            print(json.loads(response.content))
+        print(json.loads(response.content))
+        self.assertEqual(response.status_code, status.ok)
         print("\n")
 
     def test_get_empoloyee(self):
@@ -102,6 +102,9 @@ class AuthTokenWorkflowTest(TestCase):
             reverse(viewname="login"),
             data=msg,
         )
+        response = json.loads(response.content)
+        token = response.get("token")
+        self.client.defaults["HTTP_AUTHORIZATION"] = f"Token {token}"
 
         msg = {
             "identification": "222222222222",
@@ -131,12 +134,14 @@ class AuthTokenWorkflowTest(TestCase):
             reverse(viewname="login"),
             data=msg,
         )
+        response = json.loads(response.content)
+        token = response.get("token")
+        self.client.defaults["HTTP_AUTHORIZATION"] = f"Token {token}"
 
         msg = {
             "identification": "333333333333",
             "names": "test_employee",
             "last_names": "test_employee",
-            "password": "AzQWsX09",
             "role": RoleChoices.PRODUCTION_MANAGER
         }
         response = self.client.post(

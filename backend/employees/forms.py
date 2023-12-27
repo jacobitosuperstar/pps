@@ -86,23 +86,31 @@ class OOOCreationForm(forms.ModelForm):
     """
     employee_identification = forms.CharField(
         max_length=50,
+        required=True,
     )
     ooo_type = forms.ChoiceField(
         choices=OOOTypes.choices,
+        required=True,
     )
-    start_date = forms.DateField()
-    end_date = forms.DateField()
-    description = forms.CharField()
+    start_date = forms.DateTimeField(
+        required=True,
+    )
+    end_date = forms.DateTimeField(
+        required=True,
+    )
+    description = forms.CharField(
+        required=True,
+    )
 
-    # class Meta:
-    #     model = OOO
-    #     fields = [
-    #         "employee_identification",
-    #         "ooo_type",
-    #         "start_date",
-    #         "end_date",
-    #         "description",
-    #     ]
+    class Meta:
+        model = OOO
+        fields = [
+            "employee_identification",
+            "ooo_type",
+            "start_date",
+            "end_date",
+            "description",
+        ]
 
     def clean_employee_identification(self):
         try:
@@ -113,3 +121,50 @@ class OOOCreationForm(forms.ModelForm):
             return employee
         except Employee.DoesNotExist:
             raise forms.ValidationError(_("Employee not found."))
+        except Employee.MultipleObjectsReturned:
+            raise forms.ValidationError(_("Several Employees with the same document found."))
+
+    def clean_end_date(self):
+        start_date = self.cleaned_data.get("start_date")
+        end_date = self.cleaned_data.get("end_date")
+        if end_date and end_date <= start_date:
+            raise forms.ValidationError(_("End date must be after start date."))
+        return end_date
+
+
+class OOOForm(forms.Form):
+    """Form to validate the information send for the user and create an OOO.
+    """
+    employee_identification = forms.CharField(
+        max_length=50,
+        required=False,
+    )
+    ooo_type = forms.ChoiceField(
+        choices=OOOTypes.choices,
+        required=False,
+    )
+    start_date = forms.DateTimeField(
+        required=False,
+    )
+    end_date = forms.DateTimeField(
+        required=False,
+    )
+
+    def clean_employee_identification(self):
+        try:
+            employee_identification = self.cleaned_data.get("employee_identification")
+            employee = Employee.objects.get(
+                identification=employee_identification,
+            )
+            return employee
+        except Employee.DoesNotExist:
+            raise forms.ValidationError(_("Employee not found."))
+        except Employee.MultipleObjectsReturned:
+            raise forms.ValidationError(_("Several Employees with the same document found."))
+
+    def clean_end_date(self):
+        start_date = self.cleaned_data.get("start_date")
+        end_date = self.cleaned_data.get("end_date")
+        if end_date and end_date <= start_date:
+            raise forms.ValidationError(_("End date must be after start date."))
+        return end_date
