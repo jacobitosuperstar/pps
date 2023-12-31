@@ -321,17 +321,9 @@ def list_ooo_view(request: HttpRequest) -> JsonResponse:
     if end_date:
         query &= Q(end_date__lte=end_date)
 
-    ooos = OOO.objects.filter(query)
+    ooos = OOO.objects.filter(query).select_related("employee")
     ooo_list = [ooo.serializer() for ooo in ooos]
     return JsonResponse({"ooo_list": ooo_list})
-
-
-# @require_GET
-# @authenticated_user
-# @role_validation(allowed_roles=[RoleChoices.HR])
-# def detailed_ooo_view(request: HttpRequest, cc: str) -> JsonResponse:
-#     msg = {}
-#     return JsonResponse(msg)
 
 
 @require_http_methods(["DELETE"])
