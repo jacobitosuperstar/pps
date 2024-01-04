@@ -7,6 +7,11 @@ import {
   Employee,
   Role,
   RolesObject,
+  OOOTypesResponse,
+  OOOType,
+  CreateOooDto,
+  CreateOooResponse,
+  OOOModel,
 } from "@/interfaces/employees.interface";
 
 export const employeesApi = createApi({
@@ -47,15 +52,40 @@ export const employeesApi = createApi({
         invalidatesTags: ["employees"],
       }
     ),
-    getAllOoo: builder.query<Employee[], void>({
+    getAllOoo: builder.query<OOOModel[], void>({
       query: () => ({
         url: "/employees/list_ooo/",
       }),
       transformResponse(response: any) {
-        console.log(response);
-        return response;
+        return response.ooo_list;
       },
       providesTags: ["ooo"],
+    }),
+    createOoo: builder.mutation<CreateOooResponse, CreateOooDto>({
+      query: (body) => ({
+        url: "/employees/create_ooo/",
+        method: "POST",
+        body: objectToFormData(body),
+      }),
+      invalidatesTags: ["ooo"],
+    }),
+    getAllOooTypes: builder.query<OOOType[], void>({
+      query: () => ({
+        url: "/employees/ooo_types/",
+      }),
+      transformResponse(oooTypes: OOOTypesResponse) {
+        const data: OOOType[] = [];
+
+        for (const p in oooTypes) {
+          const key = p as keyof OOOTypesResponse;
+          data.push({
+            id: key,
+            label: oooTypes[key],
+          });
+        }
+
+        return data;
+      },
     }),
   }),
 });
@@ -65,4 +95,6 @@ export const {
   useGetRolesQuery,
   useCreateEmployeeMutation,
   useGetAllOooQuery,
+  useGetAllOooTypesQuery,
+  useCreateOooMutation,
 } = employeesApi;
