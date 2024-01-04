@@ -1,6 +1,9 @@
 from django import forms
 from django.core.validators import EMPTY_VALUES
 from django.utils.translation import gettext as _
+from django.utils import timezone
+from datetime import datetime
+
 from .models import (
     Employee,
     RoleChoices,
@@ -115,7 +118,7 @@ class OOOCreationForm(forms.ModelForm):
 
     def clean_employee_identification(self):
         try:
-            employee_identification = self.cleaned_data.get("employee_identification")
+            employee_identification = self.cleaned_data["employee_identification"]
             employee = Employee.objects.get(
                 identification=employee_identification,
             )
@@ -125,11 +128,26 @@ class OOOCreationForm(forms.ModelForm):
         except Employee.MultipleObjectsReturned:
             raise forms.ValidationError(_("Several Employees with the same document found."))
 
+    def clean_start_date(self):
+        start_date = self.cleaned_data["start_date"]
+        try:
+            start_date = datetime.fromisoformat(start_date)
+        except ValueError:
+            raise forms.ValidationError(_("Invalid ISO format."))
+        start_date = timezone.make_aware(start_date, timezone.get_current_timezone())
+        return start_date
+
     def clean_end_date(self):
-        start_date = self.cleaned_data.get("start_date")
-        end_date = self.cleaned_data.get("end_date")
-        if end_date and end_date <= start_date:
+        start_date = self.cleaned_data["start_date"]
+        end_date = self.cleaned_data["end_date"]
+        try:
+            start_date = datetime.fromisoformat(start_date)
+            end_date = datetime.fromisoformat(end_date)
+        except ValueError:
+            raise forms.ValidationError(_("Invalid ISO format."))
+        if end_date <= start_date:
             raise forms.ValidationError(_("End date must be after start date."))
+        end_date = timezone.make_aware(end_date, timezone.get_current_timezone())
         return end_date
 
 
@@ -164,9 +182,26 @@ class OOOForm(forms.Form):
             except Employee.MultipleObjectsReturned:
                 raise forms.ValidationError(_("Several Employees with the same document found."))
 
+    def clean_start_date(self):
+        start_date = self.cleaned_data.get("start_date")
+        if start_date:
+            try:
+                start_date = datetime.fromisoformat(start_date)
+            except ValueError:
+                raise forms.ValidationError(_("Invalid ISO format."))
+            start_date = timezone.make_aware(start_date, timezone.get_current_timezone())
+            return start_date
+
     def clean_end_date(self):
         start_date = self.cleaned_data.get("start_date")
         end_date = self.cleaned_data.get("end_date")
-        if end_date and end_date <= start_date:
-            raise forms.ValidationError(_("End date must be after start date."))
-        return end_date
+        if start_date and end_date:
+            try:
+                start_date = datetime.fromisoformat(start_date)
+                end_date = datetime.fromisoformat(end_date)
+            except ValueError:
+                raise forms.ValidationError(_("Invalid ISO format."))
+            if end_date <= start_date:
+                raise forms.ValidationError(_("End date must be after start date."))
+            end_date = timezone.make_aware(end_date, timezone.get_current_timezone())
+            return end_date
