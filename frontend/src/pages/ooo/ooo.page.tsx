@@ -91,8 +91,8 @@ const OooPage = () => {
       const response = await createOooMutation({
         employee_identification: Number(formData.employeeIdentification),
         ooo_type: formData.oooType,
-        start_date: startDate.format("YYYY-MM-DD"),
-        end_date: endDate.format("YYYY-MM-DD"),
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
         description: formData.description,
       }).unwrap();
       console.log(response);
