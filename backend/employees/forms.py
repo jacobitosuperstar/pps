@@ -152,16 +152,17 @@ class OOOForm(forms.Form):
     )
 
     def clean_employee_identification(self):
-        try:
-            employee_identification = self.cleaned_data.get("employee_identification")
-            employee = Employee.objects.get(
-                identification=employee_identification,
-            )
-            return employee
-        except Employee.DoesNotExist:
-            raise forms.ValidationError(_("Employee not found."))
-        except Employee.MultipleObjectsReturned:
-            raise forms.ValidationError(_("Several Employees with the same document found."))
+        employee_identification = self.cleaned_data.get("employee_identification")
+        if employee_identification:
+            try:
+                employee = Employee.objects.get(
+                    identification=employee_identification,
+                )
+                return employee
+            except Employee.DoesNotExist:
+                raise forms.ValidationError(_("Employee not found."))
+            except Employee.MultipleObjectsReturned:
+                raise forms.ValidationError(_("Several Employees with the same document found."))
 
     def clean_end_date(self):
         start_date = self.cleaned_data.get("start_date")
