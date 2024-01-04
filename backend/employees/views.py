@@ -269,7 +269,7 @@ def create_ooo_view(request: HttpRequest) -> JsonResponse:
 
     try:
         ooo_time = OOO(
-            employee=form.cleaned_data.get("employee"),
+            employee=form.cleaned_data.get("employee_identification"),
             ooo_type=form.cleaned_data.get("ooo_type"),
             start_date=form.cleaned_data.get("start_date"),
             end_date=form.cleaned_data.get("end_date"),
