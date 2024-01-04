@@ -87,6 +87,13 @@ class EmployeeForm(forms.Form):
 
 class OOOCreationForm(forms.ModelForm):
     """Form to validate the information send for the user and create an OOO.
+
+    Notes
+    -----
+    start_date and end_date are CharFields instead of DateTimeFields because we
+    do not want the default transformation of the ISO format datetimes that we
+    are getting. We need the raw string to transform it into a naive, then a
+    timezone Date Time.
     """
     employee_identification = forms.CharField(
         max_length=50,
@@ -96,10 +103,10 @@ class OOOCreationForm(forms.ModelForm):
         choices=OOOTypes.choices,
         required=True,
     )
-    start_date = forms.DateTimeField(
+    start_date = forms.CharField(
         required=True,
     )
-    end_date = forms.DateTimeField(
+    end_date = forms.CharField(
         required=True,
     )
     description = forms.CharField(
@@ -153,6 +160,13 @@ class OOOCreationForm(forms.ModelForm):
 
 class OOOForm(forms.Form):
     """Form to validate the information send for the user and create an OOO.
+
+    Notes
+    -----
+    start_date and end_date are CharFields instead of DateTimeFields because we
+    do not want the default transformation of the ISO format datetimes that we
+    are getting. We need the raw string to transform it into a naive, then a
+    timezone Date Time.
     """
     employee_identification = forms.CharField(
         max_length=50,
@@ -162,10 +176,10 @@ class OOOForm(forms.Form):
         choices=OOOTypes.choices,
         required=False,
     )
-    start_date = forms.DateTimeField(
+    start_date = forms.CharField(
         required=False,
     )
-    end_date = forms.DateTimeField(
+    end_date = forms.CharField(
         required=False,
     )
 
