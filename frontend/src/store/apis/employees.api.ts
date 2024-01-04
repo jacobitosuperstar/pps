@@ -12,7 +12,7 @@ import {
 export const employeesApi = createApi({
   reducerPath: "employeesApi",
   baseQuery: appBaseQuery,
-  tagTypes: ["employees"],
+  tagTypes: ["employees", "ooo"],
   endpoints: (builder) => ({
     getRoles: builder.query<Role[], void>({
       query: () => "/employees/roles/",
@@ -47,6 +47,16 @@ export const employeesApi = createApi({
         invalidatesTags: ["employees"],
       }
     ),
+    getAllOoo: builder.query<Employee[], void>({
+      query: () => ({
+        url: "/employees/list_ooo/",
+      }),
+      transformResponse(response: any) {
+        console.log(response);
+        return response;
+      },
+      providesTags: ["ooo"],
+    }),
   }),
 });
 
@@ -54,4 +64,5 @@ export const {
   useGetEmployeesQuery,
   useGetRolesQuery,
   useCreateEmployeeMutation,
+  useGetAllOooQuery,
 } = employeesApi;

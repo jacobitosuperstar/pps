@@ -3,6 +3,7 @@ import { PATHS } from "../constants";
 import { AuthenticationValidator } from "@/components";
 import { MainLayout } from "@/layouts";
 import EmployeesPage from "@/pages/employees/employee.page";
+import OooPage from "@/pages/ooo/ooo.page";
 
 export const EmployeesRoute: RouteObject = {
   element: <AuthenticationValidator />,
@@ -14,6 +15,14 @@ export const EmployeesRoute: RouteObject = {
         </MainLayout>
       ),
       path: PATHS.EMPLOYEES,
+    },
+    {
+      element: (
+        <MainLayout>
+          <OooPage />
+        </MainLayout>
+      ),
+      path: PATHS.OOO,
     },
   ],
 };

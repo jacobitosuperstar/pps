@@ -24,6 +24,7 @@ const AppDrawerList = () => {
   const menuList = [
     { label: "Dashboard", icon: <PieChartIcon />, to: PATHS.HOME },
     { label: "Personal", icon: <PeopleIcon />, to: PATHS.EMPLOYEES },
+    { label: "Permisos", icon: <PeopleIcon />, to: PATHS.OOO},
     { label: "Programación", icon: <AccessAlarmIcon />, to: PATHS.HOME },
     {
       label: "Produción",
