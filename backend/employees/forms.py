@@ -1,5 +1,6 @@
 from django import forms
 from django.core.validators import EMPTY_VALUES
+from django.utils.translation import gettext as _
 from .models import (
     Employee,
     RoleChoices,
