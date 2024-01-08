@@ -30,6 +30,9 @@ class MachineTypes(models.TextChoices):
     PE = "plastic_extruder", _("plastic extruder")
 
 
+MachineTypes_dict = {value: label for value, label in MachineTypes.choices}
+
+
 class MachineType(BaseModel):
     """The idea of this model is that there is only one type of machine and a
     lot of users can be trained to use them.
