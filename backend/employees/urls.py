@@ -39,7 +39,7 @@ urlpatterns = [
         name="list_ooo"
     ),
     path(
-        "delete_ooo/",
+        "delete_ooo/<int:id>",
         views.delete_ooo_view,
         name="delete_ooo"
     ),

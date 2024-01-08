@@ -277,7 +277,7 @@ def create_ooo_view(request: HttpRequest) -> JsonResponse:
         )
         ooo_time.save()
         msg = {"ooo_time": ooo_time.serializer()}
-        return JsonResponse(msg)
+        return JsonResponse(msg, status=status.created)
     except Exception as e:
         msg = {
             "response": _("Internal server error.")

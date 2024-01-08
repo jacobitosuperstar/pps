@@ -141,20 +141,19 @@ class OOOCreationForm(forms.ModelForm):
             start_date = datetime.fromisoformat(start_date)
         except ValueError:
             raise forms.ValidationError(_("Invalid ISO format."))
-        start_date = timezone.make_aware(start_date, timezone.get_current_timezone())
+        start_date = start_date.astimezone(timezone.get_current_timezone())
         return start_date
 
     def clean_end_date(self):
         start_date = self.cleaned_data["start_date"]
         end_date = self.cleaned_data["end_date"]
         try:
-            start_date = datetime.fromisoformat(start_date)
             end_date = datetime.fromisoformat(end_date)
         except ValueError:
             raise forms.ValidationError(_("Invalid ISO format."))
         if end_date <= start_date:
             raise forms.ValidationError(_("End date must be after start date."))
-        end_date = timezone.make_aware(end_date, timezone.get_current_timezone())
+        end_date = end_date.astimezone(timezone.get_current_timezone())
         return end_date
 
 
@@ -203,7 +202,7 @@ class OOOForm(forms.Form):
                 start_date = datetime.fromisoformat(start_date)
             except ValueError:
                 raise forms.ValidationError(_("Invalid ISO format."))
-            start_date = timezone.make_aware(start_date, timezone.get_current_timezone())
+            start_date = start_date.astimezone(timezone.get_current_timezone())
             return start_date
 
     def clean_end_date(self):
@@ -211,11 +210,10 @@ class OOOForm(forms.Form):
         end_date = self.cleaned_data.get("end_date")
         if start_date and end_date:
             try:
-                start_date = datetime.fromisoformat(start_date)
                 end_date = datetime.fromisoformat(end_date)
             except ValueError:
                 raise forms.ValidationError(_("Invalid ISO format."))
             if end_date <= start_date:
                 raise forms.ValidationError(_("End date must be after start date."))
-            end_date = timezone.make_aware(end_date, timezone.get_current_timezone())
+            end_date = end_date.astimezone(timezone.get_current_timezone())
             return end_date
