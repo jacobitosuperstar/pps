@@ -1,63 +1,100 @@
+from typing import Dict, Optional, Any, Iterable
 from django import forms
-from django.core.validators import EMPTY_VALUES
 from django.utils.translation import gettext as _
-from django.utils import timezone
-from datetime import datetime
 
+from employees.models import Employee
 from .models import (
-    MachineTypes,
+    ExistingMachineTypes,
     MachineType,
     Machine,
 )
 
 
-class MachineTypeCreationForm(forms.ModelForm):
-    """Form to validate that the information send for the user creation is
-    valid.
+class MachineTypeCreationForm(forms.Form):
+    """Form to validate the information regarding the creation of the machine
+    type.
     """
-    identification = forms.CharField(
-        max_length=50,
+    machine_type = forms.ChoiceField(
+        choices=ExistingMachineTypes.choices,
         required=True,
     )
-    names = forms.CharField(
-        max_length=100,
-        required=True,
-    )
-    last_names = forms.CharField(
-        max_length=100,
-        required=True,
-    )
-    birthday = forms.DateField(
+    trained_employees = forms.CharField(
         required=False,
-    )
-    role = forms.ChoiceField(
-        choices=RoleChoices.choices,
-        initial=RoleChoices.PRODUCTION,
-        required=True,
     )
 
     class Meta:
-        model = Employee
+        model = MachineType
         fields = [
-            "identification",
-            "names",
-            "last_names",
-            "birthday",
-            "role",
+            "machine_type",
+            "trained_employees",
         ]
+
+    def clean_trained_employees(self) -> Optional[Iterable[Employee]]:
+        """Returns the list of user ids
+        """
+        raw_employees_ids_list = self.cleaned_data.get("trained_employees")
+
+        if raw_employees_ids_list:
+
+            employees_ids_list = raw_employees_ids_list.split(",")
+            employees_ids_list = [
+                int(employee_id) for employee_id in employees_ids_list
+                if employee_id.isdigit()
+            ]
+
+            employees_list = Employee.objects.filter(id__in=employees_ids_list)
+            return employees_list
 
 
 class MachineTypeForm(forms.Form):
     """Form to validate that the information send for the user filtering is
     valid.
     """
+    id = forms.IntegerField(
+        required=True,
+    )
     machine_type = forms.ChoiceField(
-        choices=MachineTypes.choices,
+        choices=ExistingMachineTypes.choices,
+        required=True,
+    )
+    trained_employees_to_add = forms.CharField(
         required=False,
     )
-    users_identification = forms.CharField(
+    trained_employees_to_delete = forms.CharField(
         required=False,
     )
+
+    def clean_trained_employees_to_add(self) -> Optional[Iterable[Employee]]:
+        """Returns the list of user ids
+        """
+        raw_employees_ids_list = self.cleaned_data.get("trained_employees_to_add")
+
+        if raw_employees_ids_list:
+
+            employees_ids_list = raw_employees_ids_list.split(",")
+            employees_ids_list = [
+                int(employee_id) for employee_id in employees_ids_list
+                if employee_id.isdigit()
+            ]
+
+            employees_list = Employee.objects.filter(id__in=employees_ids_list)
+            return employees_list
+
+    def clean_trained_employees_to_delete(self) -> Optional[Iterable[Employee]]:
+        """Returns the list of user ids
+        """
+        raw_employees_ids_list = self.cleaned_data.get("trained_employees_to_delete")
+
+        if raw_employees_ids_list:
+
+            employees_ids_list = raw_employees_ids_list.split(",")
+            employees_ids_list = [
+                int(employee_id) for employee_id in employees_ids_list
+                if employee_id.isdigit()
+            ]
+
+            employees_list = Employee.objects.filter(id__in=employees_ids_list)
+            return employees_list
 
 
 class MachineCreationForm(forms.ModelForm):
@@ -72,7 +109,7 @@ class MachineCreationForm(forms.ModelForm):
         max_length=100,
         required=True,
     )
-    machine_type_id = forms.IntegerField(
+    machine_type = forms.IntegerField(
         required=True,
     )
 
@@ -81,18 +118,31 @@ class MachineCreationForm(forms.ModelForm):
         fields = [
             "machine_number",
             "machine_title",
-            "machine_type_id",
+            "machine_type",
         ]
 
-    def clean_machine_type(self):
-        machine_type_id = self.cleaned_data["machine_type_id"]
+    def clean_machine_type(self) -> Optional[MachineType]:
+        machine_type_id = self.cleaned_data["machine_type"]
         try:
             machine_type = MachineType.objects.get(
                 id=machine_type_id,
             )
             return machine_type
-        except Machine.DoesNotExist:
-            raise forms.ValidationError(_("Machine not found."))
+        except MachineType.DoesNotExist:
+            raise forms.ValidationError(_("Machine type not found."))
+
+    def clean(self) -> Optional[Dict[str, Any]]:
+        cleaned_data = super().clean()
+        machine_title = cleaned_data["machine_title"]
+        machine_number = cleaned_data["machine_number"]
+
+        if Machine.objects.filter(
+            machine_title=machine_title,
+            machine_number=machine_number,
+        ).exists():
+            raise forms.ValidationError(
+                _("A machine with this number and title already exists.")
+            )
 
 
 class MachineForm(forms.Form):
@@ -111,13 +161,13 @@ class MachineForm(forms.Form):
         required=False,
     )
 
-    def clean_machine_type(self):
-        machine_type_id = self.cleaned_data.get("machine_type_id")
+    def clean_machine_type(self) -> Optional[MachineType]:
+        machine_type_id = self.cleaned_data.get("machine_type")
         if machine_type_id:
             try:
                 machine_type = MachineType.objects.get(
                     id=machine_type_id,
                 )
                 return machine_type
-            except Machine.DoesNotExist:
-                raise forms.ValidationError(_("Machine not found."))
+            except MachineType.DoesNotExist:
+                raise forms.ValidationError(_("Machine type not found."))

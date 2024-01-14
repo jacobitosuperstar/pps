@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # MyApps
     "base.apps.BaseConfig",
     "employees.apps.EmployeesConfig",
+    "machines.apps.MachinesConfig",
     # Third Party Apps
     "corsheaders",
 ]
