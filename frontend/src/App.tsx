@@ -7,15 +7,19 @@ import { router } from "./router";
 import theme from "./theme";
 import { Provider } from "react-redux";
 import { store } from "./store";
+import { SnackbarProvider } from "notistack";
+import "dayjs/locale/es";
 
 const App = () => {
   return (
     <>
       <Provider store={store}>
         <ThemeProvider theme={theme}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <CssBaseline />
-            <RouterProvider router={router} />;
+          <LocalizationProvider adapterLocale="es" dateAdapter={AdapterDayjs}>
+            <SnackbarProvider  autoHideDuration={7000}>
+              <CssBaseline />
+              <RouterProvider router={router} />;
+            </SnackbarProvider>
           </LocalizationProvider>
         </ThemeProvider>
       </Provider>
