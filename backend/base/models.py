@@ -65,6 +65,9 @@ class BaseModel(models.Model):
             if isinstance(field, models.ManyToManyField):
                 field_value = [item.serializer() for item in field_value.all()]
 
+            if isinstance(field, models.ManyToManyRel):
+                field_value = [item.serializer() for item in field_value.all()]
+
             serialized_object[field_name] = field_value
 
         return serialized_object
