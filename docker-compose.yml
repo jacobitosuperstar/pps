@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 networks:
   server_network:
@@ -56,17 +56,17 @@ services:
   #     context: .
   #     dockerfile: ./frontend/Dockerfile
   #   ports:
-  #     - "3000:3000"
+  #     - "5173:5173"
+  #   expose:
+  #     - "5173"
   #   networks:
   #     - server_network
   #   volumes:
   #     - ./frontend/:/app/
   #   command: >
   #     sh -c "
-  #     npm dev
+  #     npm run dev
   #     "
   #   depends_on:
   #     - database
   #     - backend
-  #   networks:
-  #     - server_network

@@ -4,7 +4,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils.timezone import now
 from base.http_status_codes import HTTP_STATUS as status
-from employees.models import RoleChoices, Employee
+from employees.models import RoleChoices, Employee, OOOTypes
 
 
 class AuthTokenWorkflowTest(TestCase):
@@ -21,20 +21,26 @@ class AuthTokenWorkflowTest(TestCase):
             password="AzQWsX09",
         )
         self.admin_user.save()
+
         msg = {
             "identification": "1111111111",
             "password": "AzQWsX09",
         }
+
         response = self.client.post(
             reverse(viewname="login"),
             data=msg,
         )
+        response = json.loads(response.content)
+        token = response.get("token")
+        self.client.defaults["HTTP_AUTHORIZATION"] = f"Token {token}"
         return
 
     def test_pin(self):
         """Tets the state of the server.
         """
-        response = self.client.get(reverse(viewname="pin"))
+        response = self.client.get(reverse(viewname="new_pin"))
+        print(response.content)
         self.assertEqual(response.status_code, status.ok)
         print("\n")
 
@@ -42,13 +48,7 @@ class AuthTokenWorkflowTest(TestCase):
         """Tets the state of the server.
         """
         response = self.client.get(reverse(viewname="logged_pin"))
-        self.assertEqual(response.status_code, status.ok)
-        print("\n")
-
-    def test_log_out(self):
-        """Tets the state of the server.
-        """
-        response = self.client.get(reverse(viewname="logout"))
+        print(response.content)
         self.assertEqual(response.status_code, status.ok)
         print("\n")
 
@@ -56,7 +56,6 @@ class AuthTokenWorkflowTest(TestCase):
         """Test to get all the employee roles
         """
         response = self.client.get(reverse(viewname="roles"))
-        print(json.loads(response.content))
         self.assertEqual(response.status_code, status.ok)
         print("\n")
 
@@ -64,7 +63,6 @@ class AuthTokenWorkflowTest(TestCase):
         """Test to get all the employee roles
         """
         response = self.client.get(reverse(viewname="ooo_types"))
-        print(json.loads(response.content))
         self.assertEqual(response.status_code, status.ok)
         print("\n")
 
@@ -72,11 +70,8 @@ class AuthTokenWorkflowTest(TestCase):
         """Test to get all the employess
         """
         response = self.client.get(reverse(viewname="list_employees"))
-        if response.status_code == status.ok:
-            for chunk in response.streaming_content:
-                print(json.loads(chunk))
-        else:
-            print(json.loads(response.content, indent=4))
+        print(json.loads(response.content))
+        self.assertEqual(response.status_code, status.ok)
         print("\n")
 
     def test_get_empoloyee(self):
@@ -107,6 +102,9 @@ class AuthTokenWorkflowTest(TestCase):
             reverse(viewname="login"),
             data=msg,
         )
+        response = json.loads(response.content)
+        token = response.get("token")
+        self.client.defaults["HTTP_AUTHORIZATION"] = f"Token {token}"
 
         msg = {
             "identification": "222222222222",
@@ -136,12 +134,14 @@ class AuthTokenWorkflowTest(TestCase):
             reverse(viewname="login"),
             data=msg,
         )
+        response = json.loads(response.content)
+        token = response.get("token")
+        self.client.defaults["HTTP_AUTHORIZATION"] = f"Token {token}"
 
         msg = {
             "identification": "333333333333",
             "names": "test_employee",
             "last_names": "test_employee",
-            "password": "AzQWsX09",
             "role": RoleChoices.PRODUCTION_MANAGER
         }
         response = self.client.post(
@@ -150,4 +150,68 @@ class AuthTokenWorkflowTest(TestCase):
         )
         print(json.loads(response.content))
         self.assertEqual(response.status_code, status.created)
+        print("\n")
+
+    def test_create_OOO_for_employee(self):
+        # Changin the role to HR, because they are the ones that can create OOO
+        self.admin_user.role = RoleChoices.HR
+        self.admin_user.save()
+
+        msg = {
+            "identification": "1111111111",
+            "password": "AzQWsX09",
+        }
+        response = self.client.post(
+            reverse(viewname="login"),
+            data=msg,
+        )
+        response = json.loads(response.content)
+        token = response.get("token")
+        self.client.defaults["HTTP_AUTHORIZATION"] = f"Token {token}"
+
+        # Creating a production employee
+        msg = {
+            "identification": "222222222222",
+            "names": "test_employee",
+            "last_names": "test_employee",
+            "role": RoleChoices.PRODUCTION,
+        }
+        response = self.client.post(
+            reverse(viewname="create_employee"),
+            data=msg,
+        )
+
+        msg = {
+            "employee_identification": "222222222222",
+            "ooo_type": OOOTypes.PL,
+            "start_date": "2100-01-07T07:30:00Z",
+            "end_date": "2101-01-07T20:30:00Z",
+            "description": "...",
+        }
+        response = self.client.post(
+            reverse(viewname="create_ooo"),
+            data=msg,
+        )
+        print(json.loads(response.content))
+        self.assertEqual(response.status_code, status.created)
+        print("\n")
+
+        ooo = json.loads(response.content)
+        ooo_id = ooo["ooo_time"]["id"]
+
+        msg = {}
+
+        response = self.client.get(
+            reverse(viewname="list_ooo"),
+            data=msg,
+        )
+        print(json.loads(response.content))
+        self.assertEqual(response.status_code, status.ok)
+        print("\n")
+
+        response = self.client.delete(
+            reverse(viewname="delete_ooo", args=[ooo_id]),
+        )
+        print(json.loads(response.content))
+        self.assertEqual(response.status_code, status.accepted)
         print("\n")

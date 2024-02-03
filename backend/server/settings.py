@@ -42,21 +42,30 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # MyApps
     "base.apps.BaseConfig",
-    "employees.apps.EmployeesConfig"
+    "employees.apps.EmployeesConfig",
     # Third Party Apps
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
 
+CORS_ALLOWED_HEADERS = [
+    'Content-Type',
+    'Authorization',
+]
 
 ROOT_URLCONF = 'server.urls'
 AUTH_USER_MODEL = 'employees.Employee'
@@ -127,7 +136,8 @@ LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
 ]
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
 

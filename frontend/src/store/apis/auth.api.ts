@@ -1,10 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { appBaseQuery } from "./basequery";
-import {
-  LoginDto,
-  LoginResponse,
-  PinResponse,
-} from "@/interfaces/auth.interface";
+import { LoginDto, LoginResponse } from "@/interfaces/auth.interface";
+import { objectToFormData } from "@/helper/object-to-formdata";
 
 export const authApi = createApi({
   reducerPath: "authApi",
@@ -12,17 +9,12 @@ export const authApi = createApi({
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginDto>({
       query: (body) => ({
-        url: "/login",
+        url: "/employees/login/",
         method: "POST",
-        body,
-      }),
-    }),
-    pin: builder.query<PinResponse, void>({
-      query: () => ({
-        url: "/pin",
+        body: objectToFormData(body),
       }),
     }),
   }),
 });
 
-export const { useLoginMutation, usePinQuery } = authApi;
+export const { useLoginMutation } = authApi;

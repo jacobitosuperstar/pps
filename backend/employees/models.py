@@ -108,7 +108,7 @@ class Employee(AbstractBaseUser, BaseModel):
     """Custom user model for the application.
     """
     PRIVATE_FIELDS = [
-        "id",
+        # "id",
         "password",
         "is_active",
         "is_staff",
@@ -121,7 +121,7 @@ class Employee(AbstractBaseUser, BaseModel):
         null=False,
         unique=True,
         verbose_name=_("identification"),
-        help_text=_("")
+        help_text=_("identification number")
     )
     names = models.CharField(
         max_length=100,
@@ -201,7 +201,7 @@ class OOO(BaseModel):
     """Employee type of OOO.
     """
     PRIVATE_FIELDS = [
-        "id",
+        # "id",
     ]
 
     employee = models.ForeignKey(
@@ -217,11 +217,11 @@ class OOO(BaseModel):
         verbose_name=_("out of office"),
         help_text=_("out of office time"),
     )
-    start_date = models.DateField(
+    start_date = models.DateTimeField(
         blank=False,
         null=False,
     )
-    end_date = models.DateField(
+    end_date = models.DateTimeField(
         blank=False,
         null=False,
     )

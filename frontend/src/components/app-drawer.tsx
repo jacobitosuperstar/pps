@@ -1,10 +1,9 @@
-import { uiValues } from "@/constants";
+import { PATHS, uiValues } from "@/constants";
 import {
   Box,
   Divider,
   Drawer,
   List,
-  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -17,31 +16,47 @@ import AccessAlarmIcon from "@mui/icons-material/AccessAlarm";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { closeDrawer, openDrawer } from "@/store/features/shared";
+import { Link, useLocation } from "react-router-dom";
 
 const AppDrawerList = () => {
+  const location = useLocation();
+  // state
   const menuList = [
-    { label: "Dashboard", icon: <PieChartIcon /> },
-    { label: "Personal", icon: <PeopleIcon /> },
-    { label: "Programación", icon: <AccessAlarmIcon /> },
-    { label: "Produción", icon: <PrecisionManufacturingIcon /> },
+    { label: "Dashboard", icon: <PieChartIcon />, to: PATHS.HOME },
+    { label: "Personal", icon: <PeopleIcon />, to: PATHS.EMPLOYEES },
+    { label: "Permisos", icon: <PeopleIcon />, to: PATHS.OOO},
+    { label: "Programación", icon: <AccessAlarmIcon />, to: PATHS.HOME },
+    {
+      label: "Produción",
+      icon: <PrecisionManufacturingIcon />,
+      to: PATHS.HOME,
+    },
   ];
 
   return (
     <>
       <Toolbar>
-        <Typography variant="h5" textAlign="center" component="h1" fontWeight="700">
+        <Typography
+          variant="h5"
+          textAlign="center"
+          component="h1"
+          fontWeight="700"
+        >
           PPS
         </Typography>
       </Toolbar>
       <Divider />
       <List>
-        {menuList.map((item, index) => (
-          <ListItem key={item.label} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.label} />
-            </ListItemButton>
-          </ListItem>
+        {menuList.map((item) => (
+          <ListItemButton
+            selected={location.pathname === item.to}
+            component={Link}
+            to={item.to}
+            key={item.label}
+          >
+            <ListItemIcon>{item.icon}</ListItemIcon>
+            <ListItemText primary={item.label} />
+          </ListItemButton>
         ))}
       </List>
     </>

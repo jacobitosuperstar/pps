@@ -5,8 +5,5 @@ export interface LoginDto {
 
 export interface LoginResponse {
   response: string;
-}
-
-export interface PinResponse {
-  now: string;
+  token: string;
 }

@@ -1,7 +1,6 @@
 import {
   Avatar,
   Box,
-  Button,
   Checkbox,
   FormControlLabel,
   Grid,
@@ -10,6 +9,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import LoadingButton from "@mui/lab/LoadingButton";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import LoginBgTeal from "@/assets/images/login-bg-teal.webp";
 import { useAppDispatch, useAppSelector } from "@/store";
@@ -19,46 +19,67 @@ import { z } from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginUser } from "@/store/features/auth";
-import { useLoginMutation, usePinQuery } from "@/store/apis";
+import { useLoginMutation } from "@/store/apis";
+import { useEffect } from "react";
 
 const schema = z
   .object({
     identification: z.string().min(1, "Este campo es requerido"),
     password: z.string().min(1, "Este campo es requerido"),
+    remenberMe: z.boolean(),
   })
   .required();
 
 type FormData = z.infer<typeof schema>;
 
-const Login = () => {
+const LoginPage = () => {
   // redux
-  usePinQuery();
   const [doLogin, loginContext] = useLoginMutation();
-  const isAuthenticate = useAppSelector((state) => state.auth.isAuthenticate);
+
   const dispatch = useAppDispatch();
+  const authState = useAppSelector((state) => state.auth);
   // form control
-  const { control, handleSubmit } = useForm<FormData>({
+  const { control, handleSubmit, setValue } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      identification: "",
-      password: "",
+      identification: "1111111111",
+      password: "AzQWsX09",
+      remenberMe: false,
     },
   });
 
   // methods
   const onSubmit = async (formData: FormData) => {
     try {
-      const response = doLogin(formData).unwrap();
+      let remenberedId = "";
 
-      console.log(response);
+      if (formData.remenberMe) {
+        remenberedId = formData.identification;
+      } else {
+        remenberedId = "";
+      }
+
+      const response = await doLogin(formData).unwrap();
+
+      dispatch(
+        loginUser({
+          token: response.token,
+          remenberedId,
+        })
+      );
     } catch (error) {
       console.log(error);
     }
-
-    // dispatch(loginUser(1));
   };
+
+  // effects
+  useEffect(() => {
+    setValue("identification", authState.remenberedId);
+    setValue("remenberMe", !!authState.remenberedId);
+  }, []);
+
   // validate auth
-  if (isAuthenticate) {
+  if (authState.isAuthenticate) {
     return <Navigate to={PATHS.HOME}></Navigate>;
   }
 
@@ -109,6 +130,7 @@ const Login = () => {
               control={control}
               render={({ field, fieldState: { error } }) => (
                 <TextField
+                  disabled={loginContext.isLoading}
                   margin="normal"
                   required
                   fullWidth
@@ -128,6 +150,7 @@ const Login = () => {
               control={control}
               render={({ field, fieldState: { error } }) => (
                 <TextField
+                  disabled={loginContext.isLoading}
                   margin="normal"
                   required
                   fullWidth
@@ -142,18 +165,33 @@ const Login = () => {
               )}
             />
 
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Recuérdame"
+            <Controller
+              name="remenberMe"
+              control={control}
+              render={({ field }) => (
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      color="primary"
+                      onChange={(e) => field.onChange(e.target.checked)}
+                      onBlur={() => field.onBlur()}
+                      checked={field.value}
+                    />
+                  }
+                  label="Recuérdame"
+                />
+              )}
             />
-            <Button
+
+            <LoadingButton
+              loading={loginContext.isLoading}
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
               Ingresar
-            </Button>
+            </LoadingButton>
             <Grid container>
               <Grid item xs>
                 <Link href="#" variant="body2">
@@ -173,4 +211,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default LoginPage;
