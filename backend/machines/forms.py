@@ -149,6 +149,9 @@ class MachineForm(forms.Form):
     """Form to validate the information send for the user to create of filtrate
     a Machine.
     """
+    machine_id = forms.IntegerField(
+        required=True,
+    )
     machine_number = forms.CharField(
         max_length=100,
         required=False,

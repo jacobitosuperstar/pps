@@ -28,5 +28,25 @@ urlpatterns = [
         views.delete_machine_type_view,
         name="delete_machine_type"
     ),
+    path(
+        "list_machines/",
+        views.list_machine_types_view,
+        name="list_machines"
+    ),
+    path(
+        "create_machine/",
+        views.create_machine_type_view,
+        name="create_machine"
+    ),
+    path(
+        "update_machine/",
+        views.update_machine_view,
+        name="update_machine"
+    ),
+    path(
+        "delete_machine/",
+        views.delete_machine_view,
+        name="delete_machine"
+    ),
 ]
 

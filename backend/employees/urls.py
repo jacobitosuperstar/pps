@@ -1,3 +1,5 @@
+"""Machines module endpoints.
+"""
 from django.urls import path
 from . import views
 

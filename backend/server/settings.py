@@ -57,7 +57,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    # 'base.middleware.QueryCounterMiddleware',
 ]
+
+if DEBUG:
+    MIDDLEWARE.append('base.middleware.QueryCounterMiddleware')
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",

@@ -276,7 +276,7 @@ def create_ooo_view(request: HttpRequest) -> JsonResponse:
             description=form.cleaned_data.get("description"),
         )
         ooo_time.save()
-        msg = {"ooo_time": ooo_time.serializer()}
+        msg = {"ooo_time": ooo_time.serializer(depth=1)}
         return JsonResponse(msg, status=status.created)
     except Exception as e:
         msg = {
@@ -322,7 +322,7 @@ def list_ooo_view(request: HttpRequest) -> JsonResponse:
         query &= Q(end_date__lte=end_date)
 
     ooos = OOO.objects.filter(query).select_related("employee")
-    ooo_list = [ooo.serializer() for ooo in ooos]
+    ooo_list = [ooo.serializer(depth=1) for ooo in ooos]
     return JsonResponse({"ooo_list": ooo_list})
 
 

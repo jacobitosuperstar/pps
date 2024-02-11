@@ -40,39 +40,34 @@ class AuthTokenWorkflowTest(TestCase):
         """Tets the state of the server.
         """
         response = self.client.get(reverse(viewname="new_pin"))
-        print(response.content)
+        # print(response.content)
         self.assertEqual(response.status_code, status.ok)
-        print("\n")
 
     def test_logged_pin(self):
         """Tets the state of the server.
         """
         response = self.client.get(reverse(viewname="logged_pin"))
-        print(response.content)
+        # print(response.content)
         self.assertEqual(response.status_code, status.ok)
-        print("\n")
 
     def test_employee_roles(self):
         """Test to get all the employee roles
         """
         response = self.client.get(reverse(viewname="roles"))
         self.assertEqual(response.status_code, status.ok)
-        print("\n")
 
     def test_employee_ooo_types(self):
         """Test to get all the employee roles
         """
         response = self.client.get(reverse(viewname="ooo_types"))
         self.assertEqual(response.status_code, status.ok)
-        print("\n")
 
     def test_get_list_of_empoloyees(self):
         """Test to get all the employess
         """
         response = self.client.get(reverse(viewname="list_employees"))
-        print(json.loads(response.content))
+        # print(json.loads(response.content))
         self.assertEqual(response.status_code, status.ok)
-        print("\n")
 
     def test_get_empoloyee(self):
         """Test to get all the employess
@@ -86,7 +81,6 @@ class AuthTokenWorkflowTest(TestCase):
         )
         print(json.loads(response.content))
         self.assertEqual(response.status_code, status.ok)
-        print("\n")
 
     def test_create_prod_employee(self):
         """Test to create a production user
@@ -116,9 +110,8 @@ class AuthTokenWorkflowTest(TestCase):
             reverse(viewname="create_employee"),
             data=msg,
         )
-        print(json.loads(response.content))
+        # print(json.loads(response.content))
         self.assertEqual(response.status_code, status.created)
-        print("\n")
 
     def test_create_non_prod_employee(self):
         """Test to create a non production user
@@ -148,9 +141,8 @@ class AuthTokenWorkflowTest(TestCase):
             reverse(viewname="create_employee"),
             data=msg,
         )
-        print(json.loads(response.content))
+        # print(json.loads(response.content))
         self.assertEqual(response.status_code, status.created)
-        print("\n")
 
     def test_create_OOO_for_employee(self):
         # Changin the role to HR, because they are the ones that can create OOO
@@ -192,9 +184,8 @@ class AuthTokenWorkflowTest(TestCase):
             reverse(viewname="create_ooo"),
             data=msg,
         )
-        print(json.loads(response.content))
+        # print(json.loads(response.content))
         self.assertEqual(response.status_code, status.created)
-        print("\n")
 
         ooo = json.loads(response.content)
         ooo_id = ooo["ooo_time"]["id"]
@@ -205,13 +196,11 @@ class AuthTokenWorkflowTest(TestCase):
             reverse(viewname="list_ooo"),
             data=msg,
         )
-        print(json.loads(response.content))
+        # print(json.loads(response.content))
         self.assertEqual(response.status_code, status.ok)
-        print("\n")
 
         response = self.client.delete(
             reverse(viewname="delete_ooo", args=[ooo_id]),
         )
-        print(json.loads(response.content))
+        # print(json.loads(response.content))
         self.assertEqual(response.status_code, status.accepted)
-        print("\n")
