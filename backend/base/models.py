@@ -63,14 +63,20 @@ class BaseModel(models.Model):
             if isinstance(field, models.ForeignKey):
                 if depth > 0:
                     field_value = field_value.serializer(depth=depth-1)
+                else:
+                    continue
 
             if isinstance(field, models.ManyToManyField):
                 if depth > 0:
                     field_value = [item.serializer(depth=depth-1) for item in field_value.all()]
+                else:
+                    continue
 
             if isinstance(field, models.ManyToManyRel):
                 if depth > 0:
                     field_value = [item.serializer(depth=depth-1) for item in field_value.all()]
+                else:
+                    continue
 
             serialized_object[field_name] = field_value
 

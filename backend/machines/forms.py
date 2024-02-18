@@ -168,9 +168,7 @@ class MachineForm(forms.Form):
         machine_type_id = self.cleaned_data.get("machine_type")
         if machine_type_id:
             try:
-                machine_type = MachineType.objects.get(
-                    id=machine_type_id,
-                )
+                machine_type = MachineType.objects.get(id=machine_type_id)
                 return machine_type
             except MachineType.DoesNotExist:
                 raise forms.ValidationError(_("Machine type not found."))

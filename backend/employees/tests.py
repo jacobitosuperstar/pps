@@ -1,8 +1,6 @@
-import secrets
 import json
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.utils.timezone import now
 from base.http_status_codes import HTTP_STATUS as status
 from employees.models import RoleChoices, Employee, OOOTypes
 

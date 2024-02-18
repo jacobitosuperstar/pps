@@ -330,6 +330,8 @@ def list_ooo_view(request: HttpRequest) -> JsonResponse:
 @authenticated_user
 @role_validation(allowed_roles=[RoleChoices.HR])
 def delete_ooo_view(request: HttpRequest, id: int) -> JsonResponse:
+    """Deletes an OOO given the id.
+    """
     try:
         ooo = OOO.objects.get(id=id)
         ooo.delete()
@@ -341,7 +343,6 @@ def delete_ooo_view(request: HttpRequest, id: int) -> JsonResponse:
         msg = {
             "response": _("OOO entry not found.")
         }
-        base_logger.error(e)
         return JsonResponse(msg, status=status.not_found)
     except Exception as e:
         msg = {

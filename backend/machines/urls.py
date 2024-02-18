@@ -24,18 +24,18 @@ urlpatterns = [
         name="update_machine_type"
     ),
     path(
-        "delete_machine_type/",
+        "delete_machine_type/<int:id>/",
         views.delete_machine_type_view,
         name="delete_machine_type"
     ),
     path(
         "list_machines/",
-        views.list_machine_types_view,
+        views.list_machines_view,
         name="list_machines"
     ),
     path(
         "create_machine/",
-        views.create_machine_type_view,
+        views.create_machine_view,
         name="create_machine"
     ),
     path(
@@ -44,7 +44,7 @@ urlpatterns = [
         name="update_machine"
     ),
     path(
-        "delete_machine/",
+        "delete_machine/<int:id>/",
         views.delete_machine_view,
         name="delete_machine"
     ),
