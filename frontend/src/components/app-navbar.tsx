@@ -63,7 +63,7 @@ const AppNavbar = () => {
           <MenuIcon />
         </IconButton>
         <Typography variant="h6" noWrap component="div">
-          {title}
+          {/* {title} */}
         </Typography>
 
         {isAuthenticate && (

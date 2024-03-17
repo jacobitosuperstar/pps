@@ -2,6 +2,7 @@ import {
   useCreateOooMutation,
   useGetAllOooQuery,
   useGetAllOooTypesQuery,
+  useGetEmployeesQuery,
 } from "@/store/apis";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoadingButton } from "@mui/lab";
@@ -10,7 +11,10 @@ import {
   TextFieldElement,
   SelectElement,
   DatePickerElement,
+  AutocompleteElement,
 } from "react-hook-form-mui";
+import WidgetsIcon from "@mui/icons-material/Widgets";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import {
   Box,
   Button,
@@ -36,13 +40,15 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import * as dayjs from "dayjs";
 import { OOOModel } from "@/interfaces/employees.interface";
+import { CellTableMessage } from "@/components";
+import { useSnackbar } from "notistack";
 
 const schema = z
   .object({
-    employeeIdentification: z
-      .string()
-      .min(1, "Este campo es requerido")
-      .regex(/^\d+$/, "Debes agregar solo numeros"),
+    employee: z.object({
+      id: z.string().min(1, "Este campo es requerido"),
+      label: z.string().min(1, "Este campo es requerido"),
+    }),
     oooType: z.string().min(1, "Este campo es requerido"),
     startDate: z.any().refine((value) => dayjs.isDayjs(value), {
       message: "Este campo es requerido",
@@ -57,18 +63,25 @@ const schema = z
 type FormData = z.infer<typeof schema>;
 
 const OooPage = () => {
+  // notifications
+  const { enqueueSnackbar } = useSnackbar();
   // redux
+  const employees = useGetEmployeesQuery();
   const oooQuery = useGetAllOooQuery();
   const oooTypesQuery = useGetAllOooTypesQuery();
   const [createOooMutation] = useCreateOooMutation();
   // states
+  const [employeeList, setEmployeeList] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [currentOoo, setCurrentOoo] = useState<OOOModel | null>(null);
   // form control
   const formContext = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      employeeIdentification: "",
+      employee: {
+        id: "",
+        label: "",
+      },
       oooType: "",
       startDate: "",
       endDate: "",
@@ -76,6 +89,56 @@ const OooPage = () => {
     },
   });
   // methods
+  const renderTableBody = () => {
+    if (oooQuery.error) {
+      return (
+        <CellTableMessage
+          message="Ocurrió un error al obtener la información"
+          icon={<ErrorOutlineIcon />}
+          colSpan={7}
+        />
+      );
+    }
+
+    if (!oooQuery.data?.length) {
+      return (
+        <CellTableMessage
+          message="No hay datos para mostrar"
+          icon={<WidgetsIcon />}
+          colSpan={7}
+        />
+      );
+    }
+
+    return (
+      <>
+        {oooQuery.data.map((row) => (
+          <TableRow
+            key={row.id}
+            sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+          >
+            <TableCell component="th" scope="row">
+              {row.employee.identification}
+            </TableCell>
+            <TableCell align="left">{row.employee.names}</TableCell>
+            <TableCell align="left">{row.employee.last_names}</TableCell>
+            <TableCell align="left">{row.start_date}</TableCell>
+            <TableCell align="left">{row.end_date}</TableCell>
+            <TableCell align="left">{row.description}</TableCell>
+            <TableCell align="left">
+              <IconButton
+                onClick={() => handleButtonEdit(row)}
+                aria-label="editar"
+              >
+                <EditIcon />
+              </IconButton>
+            </TableCell>
+          </TableRow>
+        ))}
+      </>
+    );
+  };
+
   const onSubmit = async (formData: FormData) => {
     if (currentOoo) {
     } else {
@@ -87,18 +150,27 @@ const OooPage = () => {
     try {
       const startDate = formData.startDate as dayjs.Dayjs;
       const endDate = formData.endDate as dayjs.Dayjs;
-
+      console.log({
+        employee_identification: Number(formData.employee.id),
+        ooo_type: formData.oooType,
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
+        description: formData.description,
+      });
+      return;
       const response = await createOooMutation({
-        employee_identification: Number(formData.employeeIdentification),
+        employee_identification: Number(formData.employee),
         ooo_type: formData.oooType,
         start_date: startDate.toISOString(),
         end_date: endDate.toISOString(),
         description: formData.description,
       }).unwrap();
       console.log(response);
+      enqueueSnackbar("Permiso creado con éxito", { variant: "success" });
       formContext.reset();
     } catch (error) {
       console.log(error);
+      enqueueSnackbar("Ocurrió un error", { variant: "error" });
     }
   };
 
@@ -119,10 +191,12 @@ const OooPage = () => {
   // effects
   useEffect(() => {
     if (currentOoo) {
-      formContext.setValue(
-        "employeeIdentification",
-        currentOoo.employee.identification
-      );
+      formContext.setValue("employee", {
+        id: currentOoo.employee.identification,
+        label: currentOoo.employee.names
+          .concat(" ")
+          .concat(currentOoo.employee.last_names),
+      });
       formContext.setValue("oooType", currentOoo.ooo_type);
       formContext.setValue("startDate", dayjs(currentOoo.start_date));
       formContext.setValue("endDate", dayjs(currentOoo.end_date));
@@ -131,6 +205,19 @@ const OooPage = () => {
       formContext.reset();
     }
   }, [currentOoo]);
+
+  useEffect(() => {
+    if (employees.data) {
+      setEmployeeList(
+        employees.data.map((x) => ({
+          id: x.identification,
+          label: x.names.concat(" ").concat(x.last_names),
+        }))
+      );
+    } else {
+      setEmployeeList([]);
+    }
+  }, [employees]);
   return (
     <>
       <Box
@@ -157,41 +244,16 @@ const OooPage = () => {
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
-              <TableCell align="right">Identificación</TableCell>
-              <TableCell align="right">Nombre</TableCell>
-              <TableCell align="right">Apellido</TableCell>
-              <TableCell align="right">Fecha inicio</TableCell>
-              <TableCell align="right">Fecha Fin</TableCell>
-              <TableCell align="right">Descripción</TableCell>
-              <TableCell align="right"></TableCell>
+              <TableCell align="left">Identificación</TableCell>
+              <TableCell align="left">Nombre</TableCell>
+              <TableCell align="left">Apellido</TableCell>
+              <TableCell align="left">Fecha inicio</TableCell>
+              <TableCell align="left">Fecha Fin</TableCell>
+              <TableCell align="left">Descripción</TableCell>
+              <TableCell align="left"></TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {oooQuery.data &&
-              oooQuery.data.map((row) => (
-                <TableRow
-                  key={row.id}
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                >
-                  <TableCell component="th" scope="row">
-                    {row.employee.identification}
-                  </TableCell>
-                  <TableCell align="right">{row.employee.names}</TableCell>
-                  <TableCell align="right">{row.employee.last_names}</TableCell>
-                  <TableCell align="right">{row.start_date}</TableCell>
-                  <TableCell align="right">{row.end_date}</TableCell>
-                  <TableCell align="right">{row.description}</TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      onClick={() => handleButtonEdit(row)}
-                      aria-label="editar"
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
+          <TableBody>{renderTableBody()}</TableBody>
         </Table>
       </TableContainer>
 
@@ -205,12 +267,17 @@ const OooPage = () => {
             handleSubmit={formContext.handleSubmit(onSubmit)}
           >
             <Stack sx={{ paddingTop: "20px" }} spacing={2}>
-              <TextFieldElement
+              <AutocompleteElement
+                autocompleteProps={{
+                  isOptionEqualToValue: (option, value) =>
+                    option.id === value.id,
+                }}
+                options={employeeList}
                 label="Identificación del empleado"
-                name="employeeIdentification"
-                id="employeeIdentification"
+                name="employee"
+                loading={employees.isLoading}
                 required
-              />
+              ></AutocompleteElement>
 
               <SelectElement
                 label="Tipo de permiso"

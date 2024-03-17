@@ -14,6 +14,7 @@ import PieChartIcon from "@mui/icons-material/PieChart";
 import PeopleIcon from "@mui/icons-material/People";
 import AccessAlarmIcon from "@mui/icons-material/AccessAlarm";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
+import ArticleIcon from "@mui/icons-material/Article";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { closeDrawer, openDrawer } from "@/store/features/shared";
 import { Link, useLocation } from "react-router-dom";
@@ -24,13 +25,13 @@ const AppDrawerList = () => {
   const menuList = [
     { label: "Dashboard", icon: <PieChartIcon />, to: PATHS.HOME },
     { label: "Personal", icon: <PeopleIcon />, to: PATHS.EMPLOYEES },
-    { label: "Permisos", icon: <PeopleIcon />, to: PATHS.OOO},
-    { label: "Programación", icon: <AccessAlarmIcon />, to: PATHS.HOME },
-    {
-      label: "Produción",
-      icon: <PrecisionManufacturingIcon />,
-      to: PATHS.HOME,
-    },
+    { label: "Permisos", icon: <ArticleIcon />, to: PATHS.OOO },
+    // { label: "Programación", icon: <AccessAlarmIcon />, to: PATHS.HOME },
+    // {
+    //   label: "Produción",
+    //   icon: <PrecisionManufacturingIcon />,
+    //   to: PATHS.HOME,
+    // },
   ];
 
   return (

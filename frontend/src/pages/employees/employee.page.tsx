@@ -11,6 +11,8 @@ import {
   SelectElement,
   DatePickerElement,
 } from "react-hook-form-mui";
+import WidgetsIcon from "@mui/icons-material/Widgets";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import {
   Box,
   Button,
@@ -33,6 +35,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import * as dayjs from "dayjs";
+import { useSnackbar } from "notistack";
+import { CellTableMessage } from "@/components";
 
 const schema = z
   .object({
@@ -58,6 +62,8 @@ const schema = z
 type FormData = z.infer<typeof schema>;
 
 const EmployeesPage = () => {
+  // notifications
+  const { enqueueSnackbar } = useSnackbar();
   // redux
   const employees = useGetEmployeesQuery();
   const roles = useGetRolesQuery();
@@ -80,6 +86,52 @@ const EmployeesPage = () => {
   });
 
   // methods
+  const renderTableBody = () => {
+    if (employees.error) {
+      return (
+        <CellTableMessage
+          message="Ocurrió un error al obtener la información"
+          icon={<ErrorOutlineIcon />}
+          colSpan={4}
+        />
+      );
+    }
+
+    if (!employees.data?.length) {
+      return (
+        <CellTableMessage
+          message="No hay datos para mostrar"
+          icon={<WidgetsIcon />}
+          colSpan={4}
+        />
+      );
+    }
+
+    return (
+      <>
+        {employees.data.map((row) => (
+          <TableRow
+            key={row.identification}
+            sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+          >
+            <TableCell component="th" scope="row">
+              {row.identification}
+            </TableCell>
+            <TableCell align="left">{row.names}</TableCell>
+            <TableCell align="left">{row.last_names}</TableCell>
+            <TableCell align="left">
+              {!roles.data
+                ? ""
+                : roles.data
+                    .find((x) => x.id === row.role)
+                    ?.name?.toUpperCase()}
+            </TableCell>
+          </TableRow>
+        ))}
+      </>
+    );
+  };
+
   const onSubmit = async (formData: FormData) => {
     try {
       const date = formData.birthday as dayjs.Dayjs;
@@ -91,9 +143,11 @@ const EmployeesPage = () => {
         role: formData.role,
       }).unwrap();
       console.log(response);
+      enqueueSnackbar("Empleado creado con éxito", { variant: "success" });
       formContext.reset();
     } catch (error) {
       console.log(error);
+      enqueueSnackbar("Ocurrió un error", { variant: "error" });
     }
   };
 
@@ -126,34 +180,13 @@ const EmployeesPage = () => {
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
-              <TableCell align="right">Identificación</TableCell>
-              <TableCell align="right">Nombre</TableCell>
-              <TableCell align="right">Apellido</TableCell>
-              <TableCell align="right">Rol</TableCell>
+              <TableCell align="left">Identificación</TableCell>
+              <TableCell align="left">Nombre</TableCell>
+              <TableCell align="left">Apellido</TableCell>
+              <TableCell align="left">Rol</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {employees.data &&
-              employees.data.map((row) => (
-                <TableRow
-                  key={row.identification}
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                >
-                  <TableCell component="th" scope="row">
-                    {row.identification}
-                  </TableCell>
-                  <TableCell align="right">{row.names}</TableCell>
-                  <TableCell align="right">{row.last_names}</TableCell>
-                  <TableCell align="right">
-                    {!roles.data
-                      ? ""
-                      : roles.data
-                          .find((x) => x.id === row.role)
-                          ?.name?.toUpperCase()}
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
+          <TableBody>{renderTableBody()}</TableBody>
         </Table>
       </TableContainer>
 

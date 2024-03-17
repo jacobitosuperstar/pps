@@ -276,7 +276,7 @@ def create_ooo_view(request: HttpRequest) -> JsonResponse:
             description=form.cleaned_data.get("description"),
         )
         ooo_time.save()
-        msg = {"ooo_time": ooo_time.serializer()}
+        msg = {"ooo_time": ooo_time.serializer(depth=1)}
         return JsonResponse(msg, status=status.created)
     except Exception as e:
         msg = {
@@ -322,7 +322,7 @@ def list_ooo_view(request: HttpRequest) -> JsonResponse:
         query &= Q(end_date__lte=end_date)
 
     ooos = OOO.objects.filter(query).select_related("employee")
-    ooo_list = [ooo.serializer() for ooo in ooos]
+    ooo_list = [ooo.serializer(depth=1) for ooo in ooos]
     return JsonResponse({"ooo_list": ooo_list})
 
 
@@ -330,6 +330,8 @@ def list_ooo_view(request: HttpRequest) -> JsonResponse:
 @authenticated_user
 @role_validation(allowed_roles=[RoleChoices.HR])
 def delete_ooo_view(request: HttpRequest, id: int) -> JsonResponse:
+    """Deletes an OOO given the id.
+    """
     try:
         ooo = OOO.objects.get(id=id)
         ooo.delete()
@@ -341,7 +343,6 @@ def delete_ooo_view(request: HttpRequest, id: int) -> JsonResponse:
         msg = {
             "response": _("OOO entry not found.")
         }
-        base_logger.error(e)
         return JsonResponse(msg, status=status.not_found)
     except Exception as e:
         msg = {
