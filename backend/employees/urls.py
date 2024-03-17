@@ -26,6 +26,11 @@ urlpatterns = [
         name="list_employees"
     ),
     path(
+        "",
+        views.list_production_employees_view,
+        name="list_production_employees"
+    ),
+    path(
         "create_employee/",
         views.create_employee_view,
         name="create_employee"

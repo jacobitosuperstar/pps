@@ -37,7 +37,7 @@ class AuthTokenWorkflowTest(TestCase):
     def test_pin(self):
         """Tets the state of the server.
         """
-        response = self.client.get(reverse(viewname="new_pin"))
+        response = self.client.get(reverse(viewname="pin"))
         # print(response.content)
         self.assertEqual(response.status_code, status.ok)
 
@@ -67,6 +67,13 @@ class AuthTokenWorkflowTest(TestCase):
         # print(json.loads(response.content))
         self.assertEqual(response.status_code, status.ok)
 
+    def test_get_list_of_production_empoloyees(self):
+        """Test to get all the employess
+        """
+        response = self.client.get(reverse(viewname="list_production_employees"))
+        # print(json.loads(response.content))
+        self.assertEqual(response.status_code, status.ok)
+
     def test_get_empoloyee(self):
         """Test to get all the employess
         """
@@ -77,7 +84,7 @@ class AuthTokenWorkflowTest(TestCase):
                 # args=["1111111112"]
             )
         )
-        print(json.loads(response.content))
+        # print(json.loads(response.content))
         self.assertEqual(response.status_code, status.ok)
 
     def test_create_prod_employee(self):

@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Iterable
 import secrets
 import json
 from django.http import (
@@ -350,3 +350,37 @@ def delete_ooo_view(request: HttpRequest, id: int) -> JsonResponse:
         }
         base_logger.critical(e)
         return JsonResponse(msg, status=status.internal_server_error)
+
+
+@require_GET
+@authenticated_user
+@role_validation(
+    allowed_roles=[
+        RoleChoices.HR,
+        RoleChoices.MANAGEMENT,
+        RoleChoices.PRODUCTION_MANAGER,
+    ]
+)
+def list_production_employees_view(
+    request: HttpRequest
+) -> JsonResponse:
+    """GETs the list of active production employees."""
+    form = EmployeeForm(request.GET)
+
+    if not form.is_valid():
+        msg = {
+            "response": _("Error in the information given"),
+            "errors": form.errors,
+        }
+        return JsonResponse(msg, status=status.bad_request)
+
+    is_active = form.cleaned_data.get("is_active", True)
+
+    query = Q(role=RoleChoices.PRODUCTION)
+    if is_active:
+        query &= Q(is_active=is_active)
+
+    employees: Iterable[Employee] = Employee.objects.filter(query)
+
+    employees_list = [employee.serializer() for employee in employees]
+    return JsonResponse({"employess": employees_list})
