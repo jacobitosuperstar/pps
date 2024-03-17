@@ -7,16 +7,14 @@ from typing import (
     List,
 )
 from django.utils.translation import gettext as _
-from django.utils import timezone
 from django.db import models
 from django.db.models import Q
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 from base.models import BaseModel
 from employees.models import Employee, OOO
 
 
-class MachineTypes(models.TextChoices):
+class ExistingMachineTypes(models.TextChoices):
     """TextChoices class to store the different types of machines currently on
     the factory, where are defined both the value on the database and the human
     redable label.
@@ -30,13 +28,16 @@ class MachineTypes(models.TextChoices):
     PE = "plastic_extruder", _("plastic extruder")
 
 
+ExistingMachineTypes_dict = {value: label for value, label in ExistingMachineTypes.choices}
+
+
 class MachineType(BaseModel):
     """The idea of this model is that there is only one type of machine and a
     lot of users can be trained to use them.
     """
     machine_type = models.CharField(
         max_length=100,
-        choices=MachineTypes.choices,
+        choices=ExistingMachineTypes.choices,
         blank=False,
         null=False,
         unique=True,
@@ -50,8 +51,8 @@ class MachineType(BaseModel):
 
     class Meta:
         db_table = "machine_type"
-        verbose_name = _("machine_type")
-        verbose_name_plural = _("machine_types")
+        verbose_name = _("machine type")
+        verbose_name_plural = _("machine types")
 
     def __str__(self) -> str:
         msg = f"Machine Type: {self.machine_type}"
@@ -77,7 +78,7 @@ class Machine(BaseModel):
     )
     machine_type = models.ForeignKey(
         to=MachineType,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
         verbose_name=_("machine"),
     )
 

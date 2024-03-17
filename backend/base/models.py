@@ -34,7 +34,7 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
-    def serializer(self) -> Dict[str, Any]:
+    def serializer(self, depth: int = 0) -> Dict[str, Any]:
         """Returns a dict object with the corresponding fields and values that
         you want to serialize.
         """
@@ -53,17 +53,30 @@ class BaseModel(models.Model):
         serialized_object = {}
 
         for field in fields:
+
             field_name = field.name
             field_value = getattr(self, field_name)
-
-            if isinstance(field, models.ForeignKey):
-                field_value = field_value.serializer()
 
             if isinstance(field, (models.DateTimeField, models.DateField)):
                 field_value = field_value.isoformat() if field_value else None
 
+            if isinstance(field, models.ForeignKey):
+                if depth > 0:
+                    field_value = field_value.serializer(depth=depth-1)
+                else:
+                    continue
+
             if isinstance(field, models.ManyToManyField):
-                field_value = [item.serializer() for item in field_value.all()]
+                if depth > 0:
+                    field_value = [item.serializer(depth=depth-1) for item in field_value.all()]
+                else:
+                    continue
+
+            if isinstance(field, models.ManyToManyRel):
+                if depth > 0:
+                    field_value = [item.serializer(depth=depth-1) for item in field_value.all()]
+                else:
+                    continue
 
             serialized_object[field_name] = field_value
 

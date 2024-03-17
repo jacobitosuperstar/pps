@@ -51,22 +51,18 @@ services:
     networks:
       - server_network
   # Frontend App
-  # app:
-  #   build:
-  #     context: .
-  #     dockerfile: ./frontend/Dockerfile
-  #   ports:
-  #     - "5173:5173"
-  #   expose:
-  #     - "5173"
-  #   networks:
-  #     - server_network
-  #   volumes:
-  #     - ./frontend/:/app/
-  #   command: >
-  #     sh -c "
-  #     npm run dev
-  #     "
-  #   depends_on:
-  #     - database
-  #     - backend
+  frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile
+    ports:
+      - "5173:5173"
+    expose:
+      - "5173"
+    networks:
+      - server_network
+    volumes:
+      - ./frontend/:/app/
+    depends_on:
+      - database
+      - backend

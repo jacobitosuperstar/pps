@@ -45,7 +45,7 @@ export const employeesApi = createApi({
     createEmployee: builder.mutation<CreateEmployeeResponse, CreateEmployeeDto>(
       {
         query: (body) => ({
-          url: "/employees/create/",
+          url: "/employees/create_employee/",
           method: "POST",
           body: objectToFormData(body),
         }),
@@ -66,6 +66,13 @@ export const employeesApi = createApi({
         url: "/employees/create_ooo/",
         method: "POST",
         body: objectToFormData(body),
+      }),
+      invalidatesTags: ["ooo"],
+    }),
+    deleteOoo: builder.mutation<CreateOooResponse, number>({
+      query: (id) => ({
+        url: `/employees/delete_ooo/${id}`,
+        method: "DELETE",
       }),
       invalidatesTags: ["ooo"],
     }),
@@ -97,4 +104,5 @@ export const {
   useGetAllOooQuery,
   useGetAllOooTypesQuery,
   useCreateOooMutation,
+  useDeleteOooMutation,
 } = employeesApi;

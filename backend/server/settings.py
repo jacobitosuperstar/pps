@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # MyApps
     "base.apps.BaseConfig",
     "employees.apps.EmployeesConfig",
+    "machines.apps.MachinesConfig",
     # Third Party Apps
     "corsheaders",
 ]
@@ -57,6 +58,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
+
+# if DEBUG:
+#     MIDDLEWARE.append('base.middleware.QueryCounterMiddleware')
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",

@@ -109,6 +109,7 @@ class Employee(AbstractBaseUser, BaseModel):
     """
     PRIVATE_FIELDS = [
         # "id",
+        "trained_machines",
         "password",
         "is_active",
         "is_staff",
