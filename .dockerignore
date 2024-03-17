@@ -3,14 +3,6 @@ frontend/node_modules
 frontend/build
 frontend/dist
 
-backend/*
-backend/!Pipfile*
-backend/!manage.py
-backend/!employees/
-backend/!machines/
-backend/!products/
-backend/!server/
-
 # Archivos temporales y de respaldo
 *.swp
 *~
