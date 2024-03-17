@@ -149,6 +149,9 @@ class MachineForm(forms.Form):
     """Form to validate the information send for the user to create of filtrate
     a Machine.
     """
+    machine_id = forms.IntegerField(
+        required=True,
+    )
     machine_number = forms.CharField(
         max_length=100,
         required=False,
@@ -165,9 +168,7 @@ class MachineForm(forms.Form):
         machine_type_id = self.cleaned_data.get("machine_type")
         if machine_type_id:
             try:
-                machine_type = MachineType.objects.get(
-                    id=machine_type_id,
-                )
+                machine_type = MachineType.objects.get(id=machine_type_id)
                 return machine_type
             except MachineType.DoesNotExist:
                 raise forms.ValidationError(_("Machine type not found."))

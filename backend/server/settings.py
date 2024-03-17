@@ -59,6 +59,9 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 ]
 
+# if DEBUG:
+#     MIDDLEWARE.append('base.middleware.QueryCounterMiddleware')
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]

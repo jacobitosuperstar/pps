@@ -33,7 +33,6 @@ def authenticated_user(
             token = auth_header.split(' ')[1]
             try:
                 token_payload = decode_token(token)
-                request.token_payload = token_payload
             except InvalidSignatureError as e:
                 message = {"response": e}
                 return JsonResponse(message, status=http.forbidden)

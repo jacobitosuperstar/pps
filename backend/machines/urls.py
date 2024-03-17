@@ -24,9 +24,29 @@ urlpatterns = [
         name="update_machine_type"
     ),
     path(
-        "delete_machine_type/",
+        "delete_machine_type/<int:id>/",
         views.delete_machine_type_view,
         name="delete_machine_type"
+    ),
+    path(
+        "list_machines/",
+        views.list_machines_view,
+        name="list_machines"
+    ),
+    path(
+        "create_machine/",
+        views.create_machine_view,
+        name="create_machine"
+    ),
+    path(
+        "update_machine/",
+        views.update_machine_view,
+        name="update_machine"
+    ),
+    path(
+        "delete_machine/<int:id>/",
+        views.delete_machine_view,
+        name="delete_machine"
     ),
 ]
 

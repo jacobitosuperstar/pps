@@ -1,3 +1,5 @@
+"""Machines module endpoints.
+"""
 from django.urls import path
 from . import views
 
@@ -22,6 +24,11 @@ urlpatterns = [
         "",
         views.list_employees_view,
         name="list_employees"
+    ),
+    path(
+        "",
+        views.list_production_employees_view,
+        name="list_production_employees"
     ),
     path(
         "create_employee/",
