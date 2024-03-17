@@ -69,3 +69,23 @@ class Command(BaseCommand):
         )
         admin_user.role = RoleChoices.ACCOUNTING
         admin_user.save()
+
+        # production employees
+        production_employee = Employee.objects.create_user(
+            identification="9999999999",
+            names="test_production_employee_1",
+            last_names="test_production_employee_1",
+            role=RoleChoices.PRODUCTION,
+        )
+        production_employee = Employee.objects.create_user(
+            identification="8888888888",
+            names="test_production_employee_1",
+            last_names="test_production_employee_1",
+            role=RoleChoices.PRODUCTION,
+        )
+        production_employee = Employee.objects.create_user(
+            identification="7777777777",
+            names="test_production_employee_1",
+            last_names="test_production_employee_1",
+            role=RoleChoices.PRODUCTION,
+        )
