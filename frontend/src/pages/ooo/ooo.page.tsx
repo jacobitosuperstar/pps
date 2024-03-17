@@ -1,5 +1,6 @@
 import {
   useCreateOooMutation,
+  useDeleteOooMutation,
   useGetAllOooQuery,
   useGetAllOooTypesQuery,
   useGetEmployeesQuery,
@@ -34,14 +35,15 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import * as dayjs from "dayjs";
-import { OOOModel } from "@/interfaces/employees.interface";
 import { CellTableMessage } from "@/components";
 import { useSnackbar } from "notistack";
+import { OOOModel } from "@/interfaces/employees.interface";
+import { useConfirm } from "material-ui-confirm";
+import { Delete } from "@mui/icons-material";
 
 const schema = z
   .object({
@@ -65,15 +67,17 @@ type FormData = z.infer<typeof schema>;
 const OooPage = () => {
   // notifications
   const { enqueueSnackbar } = useSnackbar();
+  const confirm = useConfirm();
   // redux
+  const [deleteMutation, deleteContext] = useDeleteOooMutation();
   const employees = useGetEmployeesQuery();
   const oooQuery = useGetAllOooQuery();
   const oooTypesQuery = useGetAllOooTypesQuery();
-  const [createOooMutation] = useCreateOooMutation();
+  const [createOooMutation, createOooContext] = useCreateOooMutation();
   // states
   const [employeeList, setEmployeeList] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
-  const [currentOoo, setCurrentOoo] = useState<OOOModel | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   // form control
   const formContext = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -89,6 +93,24 @@ const OooPage = () => {
     },
   });
   // methods
+  const handleButtonDelete = (row: OOOModel) => {
+    confirm({
+      title: "Eliminar permiso",
+      description: "¿Seguro deseas eliminar este permiso?",
+      confirmationText: "Confirmar",
+      cancellationText: "Cancelar",
+    })
+      .then(async () => {
+        const response = await deleteMutation(row.id).unwrap();
+        console.log(response);
+        enqueueSnackbar("Permiso eliminado con éxito", { variant: "success" });
+      })
+      .catch((error) => {
+        console.log(error);
+        enqueueSnackbar("Ocurrió un error", { variant: "error" });
+      });
+  };
+
   const renderTableBody = () => {
     if (oooQuery.error) {
       return (
@@ -122,15 +144,19 @@ const OooPage = () => {
             </TableCell>
             <TableCell align="left">{row.employee.names}</TableCell>
             <TableCell align="left">{row.employee.last_names}</TableCell>
-            <TableCell align="left">{row.start_date}</TableCell>
-            <TableCell align="left">{row.end_date}</TableCell>
+            <TableCell align="left">
+              {dayjs(new Date(row.start_date)).format("YYYY-MM-DD")}
+            </TableCell>
+            <TableCell align="left">
+              {dayjs(new Date(row.end_date)).format("YYYY-MM-DD")}
+            </TableCell>
             <TableCell align="left">{row.description}</TableCell>
             <TableCell align="left">
               <IconButton
-                onClick={() => handleButtonEdit(row)}
-                aria-label="editar"
+                onClick={() => handleButtonDelete(row)}
+                aria-label="eliminar"
               >
-                <EditIcon />
+                <Delete />
               </IconButton>
             </TableCell>
           </TableRow>
@@ -140,26 +166,12 @@ const OooPage = () => {
   };
 
   const onSubmit = async (formData: FormData) => {
-    if (currentOoo) {
-    } else {
-      handleCreateOoo(formData);
-    }
-  };
-
-  const handleCreateOoo = async (formData: FormData) => {
     try {
       const startDate = formData.startDate as dayjs.Dayjs;
       const endDate = formData.endDate as dayjs.Dayjs;
-      console.log({
-        employee_identification: Number(formData.employee.id),
-        ooo_type: formData.oooType,
-        start_date: startDate.toISOString(),
-        end_date: endDate.toISOString(),
-        description: formData.description,
-      });
-      return;
+
       const response = await createOooMutation({
-        employee_identification: Number(formData.employee),
+        employee_identification: Number(formData.employee.id),
         ooo_type: formData.oooType,
         start_date: startDate.toISOString(),
         end_date: endDate.toISOString(),
@@ -175,7 +187,6 @@ const OooPage = () => {
   };
 
   const handleButtonCreate = () => {
-    setCurrentOoo(null);
     setOpen(true);
   };
 
@@ -183,29 +194,7 @@ const OooPage = () => {
     setOpen(false);
   };
 
-  const handleButtonEdit = (ooo: OOOModel) => {
-    setCurrentOoo(ooo);
-    setOpen(true);
-  };
-
   // effects
-  useEffect(() => {
-    if (currentOoo) {
-      formContext.setValue("employee", {
-        id: currentOoo.employee.identification,
-        label: currentOoo.employee.names
-          .concat(" ")
-          .concat(currentOoo.employee.last_names),
-      });
-      formContext.setValue("oooType", currentOoo.ooo_type);
-      formContext.setValue("startDate", dayjs(currentOoo.start_date));
-      formContext.setValue("endDate", dayjs(currentOoo.end_date));
-      formContext.setValue("description", currentOoo.description);
-    } else {
-      formContext.reset();
-    }
-  }, [currentOoo]);
-
   useEffect(() => {
     if (employees.data) {
       setEmployeeList(
@@ -218,6 +207,12 @@ const OooPage = () => {
       setEmployeeList([]);
     }
   }, [employees]);
+
+  useEffect(() => {
+    setIsLoading(
+      [deleteContext.isLoading, createOooContext.isLoading].some((x) => x)
+    );
+  }, [deleteContext, createOooContext]);
   return (
     <>
       <Box
@@ -258,9 +253,7 @@ const OooPage = () => {
       </TableContainer>
 
       <Dialog maxWidth="sm" fullWidth open={open} onClose={handleClose}>
-        <DialogTitle>
-          {currentOoo ? "Editar permiso" : "Crear permiso"}
-        </DialogTitle>
+        <DialogTitle>Crear permiso</DialogTitle>
         <DialogContent>
           <FormContainer
             formContext={formContext}
@@ -275,11 +268,12 @@ const OooPage = () => {
                 options={employeeList}
                 label="Identificación del empleado"
                 name="employee"
-                loading={employees.isLoading}
+                loading={isLoading}
                 required
               ></AutocompleteElement>
 
               <SelectElement
+                disabled={isLoading}
                 label="Tipo de permiso"
                 name="oooType"
                 id="oooType"
@@ -294,18 +288,26 @@ const OooPage = () => {
               />
 
               <DatePickerElement
+                disabled={isLoading}
                 label="Fecha inicio"
                 name="startDate"
                 inputProps={{ id: "startDate" }}
               />
 
               <DatePickerElement
+                slotProps={{
+                  popper: {
+                    placement: "top-start",
+                  },
+                }}
+                disabled={isLoading}
                 label="Fecha fin"
                 name="endDate"
                 inputProps={{ id: "endDate" }}
               />
 
               <TextFieldElement
+                disabled={isLoading}
                 label="Descripción"
                 name="description"
                 id="description"
@@ -316,6 +318,7 @@ const OooPage = () => {
 
               <DialogActions>
                 <LoadingButton
+                  loading={isLoading}
                   color="primary"
                   variant="outlined"
                   onClick={handleClose}
@@ -323,11 +326,12 @@ const OooPage = () => {
                   Cerrar
                 </LoadingButton>
                 <LoadingButton
+                  loading={isLoading}
                   type="submit"
                   color="primary"
                   variant="contained"
                 >
-                  {currentOoo ? "Editar" : "Crear"}
+                  Crear
                 </LoadingButton>
               </DialogActions>
             </Stack>

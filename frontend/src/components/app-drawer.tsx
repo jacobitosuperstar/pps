@@ -27,11 +27,11 @@ const AppDrawerList = () => {
     { label: "Personal", icon: <PeopleIcon />, to: PATHS.EMPLOYEES },
     { label: "Permisos", icon: <ArticleIcon />, to: PATHS.OOO },
     // { label: "Programación", icon: <AccessAlarmIcon />, to: PATHS.HOME },
-    // {
-    //   label: "Produción",
-    //   icon: <PrecisionManufacturingIcon />,
-    //   to: PATHS.HOME,
-    // },
+    {
+      label: "Tipos de maquinas",
+      icon: <PrecisionManufacturingIcon />,
+      to: PATHS.MACHINES,
+    },
   ];
 
   return (

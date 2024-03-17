@@ -37,6 +37,8 @@ import { z } from "zod";
 import * as dayjs from "dayjs";
 import { useSnackbar } from "notistack";
 import { CellTableMessage } from "@/components";
+import { useConfirm } from "material-ui-confirm";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
 const schema = z
   .object({
@@ -63,7 +65,9 @@ type FormData = z.infer<typeof schema>;
 
 const EmployeesPage = () => {
   // notifications
+  const confirm = useConfirm();
   const { enqueueSnackbar } = useSnackbar();
+
   // redux
   const employees = useGetEmployeesQuery();
   const roles = useGetRolesQuery();
@@ -72,7 +76,7 @@ const EmployeesPage = () => {
 
   // states
   const [open, setOpen] = useState(false);
-
+  const [, copy] = useCopyToClipboard();
   // form control
   const formContext = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -143,7 +147,27 @@ const EmployeesPage = () => {
         role: formData.role,
       }).unwrap();
       console.log(response);
+
       enqueueSnackbar("Empleado creado con éxito", { variant: "success" });
+      if (response?.generated_password) {
+        await confirm({
+          title: "Contraseña",
+          titleProps: {
+            align: "center",
+          },
+          content: `Su contraseña es: ${response.generated_password}`,
+          contentProps: {
+            sx: {
+              textAlign: "center",
+            },
+          },
+          confirmationText: "Copiar al portapapeles",
+          hideCancelButton: true,
+        });
+
+        copy(response.generated_password)
+        enqueueSnackbar("La contraseña se ha copiado al portapapeles", { variant: "success" });
+      }
       formContext.reset();
     } catch (error) {
       console.log(error);

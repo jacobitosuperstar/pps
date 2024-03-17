@@ -4,4 +4,5 @@ export const PATHS = {
   ABOUT: "/about",
   EMPLOYEES: "/employees",
   OOO: "/ooo",
+  MACHINES: "/maquinas",
 };

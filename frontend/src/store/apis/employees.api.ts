@@ -69,6 +69,13 @@ export const employeesApi = createApi({
       }),
       invalidatesTags: ["ooo"],
     }),
+    deleteOoo: builder.mutation<CreateOooResponse, number>({
+      query: (id) => ({
+        url: `/employees/delete_ooo/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ooo"],
+    }),
     getAllOooTypes: builder.query<OOOType[], void>({
       query: () => ({
         url: "/employees/ooo_types/",
@@ -97,4 +104,5 @@ export const {
   useGetAllOooQuery,
   useGetAllOooTypesQuery,
   useCreateOooMutation,
+  useDeleteOooMutation,
 } = employeesApi;
