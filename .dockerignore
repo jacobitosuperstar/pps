@@ -1,0 +1,9 @@
+# Archivos y directorios generados durante el desarrollo
+frontend/node_modules
+frontend/build
+frontend/dist
+
+# Archivos temporales y de respaldo
+*.swp
+*~
+.DS_Store
