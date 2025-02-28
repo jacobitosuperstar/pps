@@ -54,7 +54,9 @@ class EmployessManager(BaseUserManager):
         if not last_names:
             raise ValueError(_("Employee must have a last name."))
         if extra_fields.get("role") != RoleChoices.PRODUCTION and not password:
-            raise ValueError(_('A password must be provided.'))
+            raise ValueError(_("A password must be provided."))
+        if extra_fields.get("role") == RoleChoices.PRODUCTION and password:
+            raise ValueError(_("Production employees don't have password."))
 
         user = self.model(
             identification=identification,
@@ -146,7 +148,7 @@ class Employee(AbstractBaseUser, BaseModel):
         default=RoleChoices.PRODUCTION,
     )
     birthday = models.DateField(
-        blank=False,
+        blank=True,
         null=True,
     )
     date_joined = models.DateField(

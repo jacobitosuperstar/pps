@@ -4,11 +4,12 @@ from typing import (
     Dict,
     List,
     Union,
+    Optional,
     Any,
 )
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext as _
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest
 from django.forms import ModelForm, Form
 from django.db.models import Q
 from django.core.exceptions import (
@@ -19,12 +20,13 @@ from django.core.exceptions import (
 
 from .logger import base_logger
 from .models import BaseModel
-from .http_status_codes import HTTP_STATUS as status
 
 
 class BaseMixin:
-    model: BaseModel
-    form: Union[ModelForm, Form, None] = None
+    model: type[BaseModel]
+    form: Union[type[Form], None] = None
+    prefetch_fields: List[Optional[str]] = []
+    select_fields: List[Optional[str]] = []
     serializer_depth: int = 0
 
     def serialize(
@@ -88,48 +90,72 @@ class BaseMixin:
                 cleaned_data[key] = form_data
         return cleaned_data
 
+    def filter_all_query(self,) -> QuerySet:
+        """Dinamically created filtering query given the data.
+        """
+        queryset: QuerySet = self.model.objects.filter(is_deleted=False)
+
+        if self.select_fields:
+            queryset: QuerySet = queryset.select_related(*self.select_fields)
+
+        if self.prefetch_fields:
+            queryset: QuerySet = queryset.prefetch_related(*self.prefetch_fields)
+
+        return queryset
+
     def filter_query(
         self,
         data: Dict[str, Any],
     ) -> QuerySet:
         """Dinamically created filtering query given the data.
         """
-        query = Q()
+        query: Q = Q()
 
-        # TODO: check how are we going to list the elements that are deleted.
-        # if "is_deleted" not in data:
-        #     data["is_deleted"] = False
+        # Always exclude deleted elements by default.
+        if "is_deleted" not in data:
+            data["is_deleted"] = False
 
         for key, value in data.items():
             query &= Q(**{key:value})
 
         queryset: QuerySet = self.model.objects.filter(query)
 
-        # TODO: Add prefetch and select related to optimice the database calls
-        # for when the depth of the serializer is greater than 0.
+        if self.select_fields:
+            queryset: QuerySet = queryset.select_related(*self.select_fields)
+
+        if self.prefetch_fields:
+            queryset: QuerySet = queryset.prefetch_related(*self.prefetch_fields)
 
         return queryset
 
     def get_query(
         self,
-        data: Dict[str, Any]
+        data: Dict[str, Any],
     ) -> BaseModel:
         """Dinamically created get query, given the data.
         """
-        query = Q()
+        query: Q = Q()
 
         for key, value in data.items():
             query &= Q(**{key:value})
 
         try:
-            db_object: BaseModel = self.model.objects.get(query)
+            queryset: QuerySet = self.model.objects.filter(query)
+
+            if self.select_fields:
+                queryset: QuerySet = queryset.select_related(*self.select_fields)
+
+            if self.prefetch_fields:
+                queryset: QuerySet = queryset.prefetch_related(*self.prefetch_fields)
+
+            db_object: BaseModel = queryset.get()
             return db_object
-        except self.model.MultipleObjectsReturned as e:
+        except self.model.MultipleObjectsReturned:
             msg = {
                 "response": _(f"Multiple entries of type {self.model._meta.verbose_name} found.")
             }
             raise MultipleObjectsReturned(msg)
-        except self.model.DoesNotExist as e:
+        except self.model.DoesNotExist:
             msg = {
                 "response": _(f"{self.model._meta.verbose_name} not found.")
             }
@@ -165,14 +191,14 @@ class BaseMixin:
         """Updates a model object with the given cleaned data.
         """
         try:
-            changed = False
+            changed: bool = False
 
             for key, value in data.items():
                 if value is not None and hasattr(db_object, key):
                     model_object_value = getattr(db_object, key)
                     if model_object_value != value:
                         setattr(db_object, key, value)
-                        changed = True
+                        changed: bool = True
 
             if changed is True:
                 db_object.full_clean()
@@ -194,7 +220,7 @@ class BaseMixin:
             db_object.save()
         except Exception as e:
             # Handle validation or database constraint errors
-            msg = {
+            msg: Dict[str, Any] = {
                 "response": _(f"Error deleting object {self.model._meta.verbose_name}")
             }
             base_logger.critical(e)

@@ -82,7 +82,7 @@ class EmployeeForm(forms.Form):
         choices=RoleChoices.choices,
         required=False,
     )
-    is_active = forms.BooleanField(required=False,)
+    is_deleted = forms.BooleanField(required=False,)
 
 
 class OOOCreationForm(forms.ModelForm):
@@ -95,7 +95,7 @@ class OOOCreationForm(forms.ModelForm):
     are getting. We need the raw string to transform it into a naive, then a
     timezone Date Time.
     """
-    employee_identification = forms.CharField(
+    employee = forms.CharField(
         max_length=50,
         required=True,
     )
@@ -116,16 +116,16 @@ class OOOCreationForm(forms.ModelForm):
     class Meta:
         model = OOO
         fields = [
-            "employee_identification",
+            "employee",
             "ooo_type",
             "start_date",
             "end_date",
             "description",
         ]
 
-    def clean_employee_identification(self):
+    def clean_employee(self):
         try:
-            employee_identification = self.cleaned_data["employee_identification"]
+            employee_identification = self.cleaned_data["employee"]
             employee = Employee.objects.get(
                 identification=employee_identification,
             )
@@ -167,7 +167,7 @@ class OOOForm(forms.Form):
     are getting. We need the raw string to transform it into a naive, then a
     timezone Date Time.
     """
-    employee_identification = forms.CharField(
+    employee = forms.CharField(
         max_length=50,
         required=False,
     )
@@ -182,8 +182,8 @@ class OOOForm(forms.Form):
         required=False,
     )
 
-    def clean_employee_identification(self):
-        employee_identification = self.cleaned_data.get("employee_identification")
+    def clean_employee(self):
+        employee_identification = self.cleaned_data.get("employee")
         if employee_identification:
             try:
                 employee = Employee.objects.get(

@@ -64,20 +64,26 @@ class BaseModel(models.Model):
                 if depth > 0:
                     field_value = field_value.serializer(depth=depth-1)
                 else:
-                    continue
+                    # just putting the ID there when we don't want to go into
+                    # the detailed version of the model object
+                    field_value = field_value.id
+                    # continue
 
-            if isinstance(field, models.ManyToManyField):
+            if isinstance(field, models.ManyToManyField) or isinstance(field, models.ManyToManyRel):
                 if depth > 0:
-                    field_value = [item.serializer(depth=depth-1) for item in field_value.all()]
+                    field_value = [
+                        item.serializer(depth=depth-1) for item
+                        in field_value.all()
+                    ]
                 else:
-                    continue
-
-            if isinstance(field, models.ManyToManyRel):
-                if depth > 0:
-                    field_value = [item.serializer(depth=depth-1) for item in field_value.all()]
-                else:
-                    continue
-
+                    # just putting the ID there when we don't want to go into
+                    # the detailed version of the model object
+                    field_value = [
+                        item.id for item in field_value.all()
+                    ]
+                    # continue
             serialized_object[field_name] = field_value
-
         return serialized_object
+
+
+                

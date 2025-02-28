@@ -1,12 +1,13 @@
 import json
 from django.test import TestCase, Client
+from django.test.client import WSGIRequest
 from django.urls import reverse
 from base.http_status_codes import HTTP_STATUS as status
-from employees.models import RoleChoices, Employee, OOOTypes
+from employees.models import RoleChoices, Employee, OOO, OOOTypes
 
 
-class AuthTokenWorkflowTest(TestCase):
-    """
+class EmployeesWorkflowTest(TestCase):
+    """Testing the CRUD of the Employees module
     """
     def setUp(self) -> None:
         # setting up the django client
@@ -18,7 +19,15 @@ class AuthTokenWorkflowTest(TestCase):
             last_names="test_super_employee",
             password="AzQWsX09",
         )
+        self.admin_user.role = RoleChoices.HR
         self.admin_user.save()
+
+        self.production_user = Employee.objects.create_user(
+            identification="2222222222",
+            names="test_production_employee",
+            last_names="test_production_employee",
+            role=RoleChoices.PRODUCTION,
+        )
 
         msg = {
             "identification": "1111111111",
@@ -26,7 +35,7 @@ class AuthTokenWorkflowTest(TestCase):
         }
 
         response = self.client.post(
-            reverse(viewname="login"),
+            reverse(viewname="employees_login"),
             data=msg,
         )
         response = json.loads(response.content)
@@ -34,178 +43,274 @@ class AuthTokenWorkflowTest(TestCase):
         self.client.defaults["HTTP_AUTHORIZATION"] = f"Token {token}"
         return
 
-    def test_pin(self):
-        """Tets the state of the server.
-        """
-        response = self.client.get(reverse(viewname="pin"))
-        # print(response.content)
-        self.assertEqual(response.status_code, status.ok)
-
-    def test_logged_pin(self):
-        """Tets the state of the server.
-        """
-        response = self.client.get(reverse(viewname="logged_pin"))
-        # print(response.content)
-        self.assertEqual(response.status_code, status.ok)
-
     def test_employee_roles(self):
         """Test to get all the employee roles
         """
-        response = self.client.get(reverse(viewname="roles"))
-        self.assertEqual(response.status_code, status.ok)
-
-    def test_employee_ooo_types(self):
-        """Test to get all the employee roles
-        """
-        response = self.client.get(reverse(viewname="ooo_types"))
+        response = self.client.get(reverse(viewname="employees_roles"))
         self.assertEqual(response.status_code, status.ok)
 
     def test_get_list_of_empoloyees(self):
         """Test to get all the employess
         """
-        response = self.client.get(reverse(viewname="list_employees"))
-        # print(json.loads(response.content))
+        response = self.client.get(reverse(viewname="employees_employees"))
         self.assertEqual(response.status_code, status.ok)
 
-    def test_get_list_of_production_empoloyees(self):
-        """Test to get all the employess
-        """
-        response = self.client.get(reverse(viewname="list_production_employees"))
-        # print(json.loads(response.content))
-        self.assertEqual(response.status_code, status.ok)
-
-    def test_get_empoloyee(self):
-        """Test to get all the employess
+    def test_get_list_of_filtered_empoloyees(self):
+        """Test to get all the filtered employees.
         """
         response = self.client.get(
-            reverse(
-                viewname="get_employee",
-                args=["1111111111"]
-                # args=["1111111112"]
-            )
+            reverse(viewname="employees_filtered_employees"),
+            data={"role": RoleChoices.PRODUCTION},
         )
-        # print(json.loads(response.content))
+        data = json.loads(response.content)
+        for employee in data[Employee._meta.verbose_name_plural]:
+            self.assertEqual(employee["role"], RoleChoices.PRODUCTION)
         self.assertEqual(response.status_code, status.ok)
 
-    def test_create_prod_employee(self):
-        """Test to create a production user
+    def test_employee_CRUD(self):
+        """Test all the CRUD of an employee
         """
-        self.admin_user.role = RoleChoices.HR
-        self.admin_user.save()
-
+        # EMPLOYEE CREATION
         msg = {
-            "identification": "1111111111",
-            "password": "AzQWsX09",
-        }
-        response = self.client.post(
-            reverse(viewname="login"),
-            data=msg,
-        )
-        response = json.loads(response.content)
-        token = response.get("token")
-        self.client.defaults["HTTP_AUTHORIZATION"] = f"Token {token}"
-
-        msg = {
-            "identification": "222222222222",
-            "names": "test_employee",
-            "last_names": "test_employee",
+            "identification": "3333333333",
+            "names": "test_production_employee",
+            "last_names": "test_production_employee",
             "role": RoleChoices.PRODUCTION,
         }
         response = self.client.post(
-            reverse(viewname="create_employee"),
+            reverse(viewname="employees_employees"),
             data=msg,
         )
-        # print(json.loads(response.content))
+        data = json.loads(response.content)
+        self.assertEqual(data["identification"], msg["identification"])
         self.assertEqual(response.status_code, status.created)
 
-    def test_create_non_prod_employee(self):
-        """Test to create a non production user
+        # GETTING SPECIFIC EMPLOYEE
+        response = self.client.get(
+            reverse(
+                viewname="employees_dud_employee",
+                args=["3333333333"]
+            ),
+        )
+        data = json.loads(response.content)
+        self.assertEqual(
+            data[Employee._meta.verbose_name]["identification"],
+            msg["identification"]
+        )
+        self.assertEqual(response.status_code, status.ok)
+
+        # UPDATING SPECIFIC EMPLOYEE
+        msg = {
+            "identification": "4444444444",
+            "names": "test_updated_production_employee",
+            "last_names": "test_updated_production_employee",
+            "role": RoleChoices.PRODUCTION_MANAGER,
+        }
+        response = self.client.post(
+            reverse(
+                viewname="employees_dud_employee",
+                args=["3333333333"]
+            ),
+            data=msg,
+        )
+        data = json.loads(response.content)
+        self.assertEqual(
+            data["identification"],
+            msg["identification"]
+        )
+        self.assertEqual(
+            data["role"],
+            msg["role"]
+        )
+        self.assertEqual(response.status_code, status.accepted)
+
+        # DELETING SPECIFIC EMPLOYEE
+        response = self.client.delete(
+            reverse(
+                viewname="employees_dud_employee",
+                args=["4444444444"]
+            ),
+        )
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, status.accepted)
+
+
+class OOOWorkflowTest(TestCase):
+    """Testing the CRUD of the OOO module
+    """
+    def setUp(self) -> None:
+        # setting up the django client
+        self.client = Client()
+        # creating an admin user
+        self.admin_user = Employee.objects.create_superuser(
+            identification="1111111111",
+            names="test_super_employee",
+            last_names="test_super_employee",
+            password="AzQWsX09",
+        )
+        self.admin_user.role = RoleChoices.HR
+        self.admin_user.save()
+
+        self.production_user_1 = Employee.objects.create_user(
+            identification="2222222222",
+            names="test_production_employee_1",
+            last_names="test_production_employee_1",
+            role=RoleChoices.PRODUCTION,
+        )
+
+        self.production_user_2 = Employee.objects.create_user(
+            identification="3333333333",
+            names="test_production_employee_2",
+            last_names="test_production_employee_2",
+            role=RoleChoices.PRODUCTION,
+        )
+
+        self.ooo_1 = OOO.objects.create(
+            employee=self.production_user_1,
+            ooo_type=OOOTypes.PL,
+            start_date="2100-01-07T07:30:00Z",
+            end_date="2101-01-07T20:30:00Z",
+            description="Nothing to see here, just normal paid time off.",
+        )
+
+        self.ooo_2 = OOO.objects.create(
+            employee=self.production_user_2,
+            ooo_type=OOOTypes.NPL,
+            start_date="2100-01-07T07:30:00Z",
+            end_date="2101-01-07T20:30:00Z",
+            description="Nothing to see here, just normal paid time off.",
+        )
+
+        msg = {
+            "identification": "1111111111",
+            "password": "AzQWsX09",
+        }
+
+        response = self.client.post(
+            reverse(viewname="employees_login"),
+            data=msg,
+        )
+        response = json.loads(response.content)
+        token = response.get("token")
+        self.client.defaults["HTTP_AUTHORIZATION"] = f"Token {token}"
+        return
+
+    def test_employee_ooo_types(self):
+        """Test to get all the employee roles
         """
-        self.admin_user.role = RoleChoices.HR
-        self.admin_user.save()
+        response = self.client.get(reverse(viewname="employees_ooo_types"))
+        self.assertEqual(response.status_code, status.ok)
 
+    def test_get_list_of_ooos(self):
+        response = self.client.get(
+            reverse(viewname="employees_ooos"),
+        )
+        data = json.loads(response.content)
+        self.assertEqual(len(data[OOO._meta.verbose_name_plural]), 2)
+        self.assertEqual(response.status_code, status.ok)
+
+    def test_OOO_filtered_list(self):
+        # filter by OOO type
         msg = {
-            "identification": "1111111111",
-            "password": "AzQWsX09",
+            "ooo_type": OOOTypes.PL,
         }
-        response = self.client.post(
-            reverse(viewname="login"),
+        response = self.client.get(
+            reverse(viewname="employees_filtered_ooo"),
             data=msg,
         )
-        response = json.loads(response.content)
-        token = response.get("token")
-        self.client.defaults["HTTP_AUTHORIZATION"] = f"Token {token}"
+        data = json.loads(response.content)
+        for ooo in data[OOO._meta.verbose_name_plural]:
+            self.assertEqual(ooo["ooo_type"], OOOTypes.PL)
+        self.assertEqual(response.status_code, status.ok)
 
+        # filter by employee
         msg = {
-            "identification": "333333333333",
-            "names": "test_employee",
-            "last_names": "test_employee",
-            "role": RoleChoices.PRODUCTION_MANAGER
+            "employee": "2222222222",
         }
-        response = self.client.post(
-            reverse(viewname="create_employee"),
+        response = self.client.get(
+            reverse(viewname="employees_filtered_ooo"),
             data=msg,
         )
-        # print(json.loads(response.content))
-        self.assertEqual(response.status_code, status.created)
+        data = json.loads(response.content)
+        for ooo in data[OOO._meta.verbose_name_plural]:
+            self.assertEqual(ooo["employee"]["identification"], msg["employee"])
+        self.assertEqual(response.status_code, status.ok)
 
-    def test_create_OOO_for_employee(self):
-        # Changin the role to HR, because they are the ones that can create OOO
-        self.admin_user.role = RoleChoices.HR
-        self.admin_user.save()
-
-        msg = {
-            "identification": "1111111111",
-            "password": "AzQWsX09",
-        }
-        response = self.client.post(
-            reverse(viewname="login"),
-            data=msg,
+    def test_ooo_detail(self):
+        # GET OOO
+        response = self.client.get(
+            reverse(
+                viewname="employees_dud_ooo",
+                args=[self.ooo_1.id]
+            ),
         )
-        response = json.loads(response.content)
-        token = response.get("token")
-        self.client.defaults["HTTP_AUTHORIZATION"] = f"Token {token}"
-
-        # Creating a production employee
-        msg = {
-            "identification": "222222222222",
-            "names": "test_employee",
-            "last_names": "test_employee",
-            "role": RoleChoices.PRODUCTION,
-        }
-        response = self.client.post(
-            reverse(viewname="create_employee"),
-            data=msg,
+        data = json.loads(response.content)
+        self.assertEqual(
+            data[OOO._meta.verbose_name]["employee"]["identification"],
+            self.ooo_1.employee.identification,
         )
+        self.assertEqual(response.status_code, status.ok)
 
+    def test_OOO_creation(self):
+        """Testing OOO Creation
+        """
+        # CREATE OOO
         msg = {
-            "employee_identification": "222222222222",
+            "employee": "2222222222",
             "ooo_type": OOOTypes.PL,
             "start_date": "2100-01-07T07:30:00Z",
             "end_date": "2101-01-07T20:30:00Z",
-            "description": "...",
+            "description": "Nothing to see here, just normal paid time off.",
         }
         response = self.client.post(
-            reverse(viewname="create_ooo"),
+            reverse(viewname="employees_ooos"),
             data=msg,
         )
-        # print(json.loads(response.content))
+        data = json.loads(response.content)
+        self.assertEqual(
+            data[OOO._meta.verbose_name]["ooo_type"],
+            msg["ooo_type"],
+        )
+        self.assertEqual(
+            data[OOO._meta.verbose_name]["employee"]["identification"],
+            msg["employee"],
+        )
         self.assertEqual(response.status_code, status.created)
 
-        ooo = json.loads(response.content)
-        ooo_id = ooo["ooo_time"]["id"]
-
-        msg = {}
-
-        response = self.client.get(
-            reverse(viewname="list_ooo"),
+    def test_OOO_update(self):
+        """Testing OOO Update
+        """
+        # UPDATE OOO
+        msg = {
+            "employee": "3333333333",
+            "ooo_type": OOOTypes.PL,
+        }
+        response = self.client.post(
+            reverse(
+                viewname="employees_dud_ooo",
+                args=[self.ooo_2.id]
+            ),
             data=msg,
         )
-        # print(json.loads(response.content))
-        self.assertEqual(response.status_code, status.ok)
-
-        response = self.client.delete(
-            reverse(viewname="delete_ooo", args=[ooo_id]),
+        data = json.loads(response.content)
+        self.assertEqual(
+            data[OOO._meta.verbose_name]["ooo_type"],
+            msg["ooo_type"],
         )
-        # print(json.loads(response.content))
+        self.assertEqual(
+            data[OOO._meta.verbose_name]["employee"]["identification"],
+            msg["employee"],
+        )
+        self.assertEqual(response.status_code, status.accepted)
+
+    def test_OOO_delete(self):
+        """Testing OOO Delete
+        """
+        # DELETE OOO
+        response = self.client.delete(
+            reverse(
+                viewname="employees_dud_ooo",
+                args=[self.ooo_1.id]
+            ),
+        )
         self.assertEqual(response.status_code, status.accepted)
