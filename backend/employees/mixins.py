@@ -1,13 +1,14 @@
 """JWT role validation mixins.
 """
-from django.utils.decorators import method_decorator
 from django.views import View
 
 from jwt_authentication.decorators import authenticated_user
 from .decorators import role_validation
+from employees.models import RoleChoices
 
 
 class AuthenticatedUserMixin(View):
+
     @classmethod
     def as_view(cls, **initkwargs):
         """We modify the creation of the view function from the View class and
@@ -22,7 +23,7 @@ class AuthenticatedUserMixin(View):
 
 
 class RoleValidatorMixin(AuthenticatedUserMixin):
-    allowed_roles = []
+    allowed_roles: list[RoleChoices] = []
 
     @classmethod
     def as_view(cls, **initkwargs):

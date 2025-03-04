@@ -23,12 +23,12 @@ urlpatterns = [
     path(
         "",
         views.EmployessView.as_view(),
-        name="employees_employees"
+        name="employees"
     ),
     path(
         "filetered/",
         views.EmployessFilteredView.as_view(),
-        name="employees_filtered_employees"
+        name="employees_filtered"
     ),
     path(
         "ooo/",

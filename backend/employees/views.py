@@ -143,6 +143,7 @@ class EmployessFilteredView(
     allowed_roles = [
         RoleChoices.HR,
         RoleChoices.MANAGEMENT,
+        RoleChoices.PRODUCTION_MANAGER,
     ]
     model = Employee
     form: type[EmployeeForm] = EmployeeForm

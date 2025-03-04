@@ -52,14 +52,14 @@ class EmployeesWorkflowTest(TestCase):
     def test_get_list_of_empoloyees(self):
         """Test to get all the employess
         """
-        response = self.client.get(reverse(viewname="employees_employees"))
+        response = self.client.get(reverse(viewname="employees"))
         self.assertEqual(response.status_code, status.ok)
 
     def test_get_list_of_filtered_empoloyees(self):
         """Test to get all the filtered employees.
         """
         response = self.client.get(
-            reverse(viewname="employees_filtered_employees"),
+            reverse(viewname="employees_filtered"),
             data={"role": RoleChoices.PRODUCTION},
         )
         data = json.loads(response.content)
@@ -78,7 +78,7 @@ class EmployeesWorkflowTest(TestCase):
             "role": RoleChoices.PRODUCTION,
         }
         response = self.client.post(
-            reverse(viewname="employees_employees"),
+            reverse(viewname="employees"),
             data=msg,
         )
         data = json.loads(response.content)
