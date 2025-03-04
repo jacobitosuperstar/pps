@@ -15,12 +15,6 @@ class ProductCreationForm(forms.Form):
     materials = forms.JSONField(
         required=False,
     )
-    production_time = forms.DurationField(
-        required=False,
-    )
-    setup_time = forms.DurationField(
-        required=False,
-    )
 
     def clean_name(self):
         """Checks for the uniqueness of the product name.
@@ -35,8 +29,6 @@ class ProductCreationForm(forms.Form):
         fields = [
             "name",
             "materials",
-            "production_time",
-            "setup_time",
         ]
 
 class ProductUpdateForm(forms.Form):
@@ -46,12 +38,6 @@ class ProductUpdateForm(forms.Form):
         required=False,
     )
     materials = forms.JSONField(
-        required=False,
-    )
-    production_time = forms.DurationField(
-        required=False,
-    )
-    setup_time = forms.DurationField(
         required=False,
     )
 
@@ -68,14 +54,5 @@ class ProductForm(forms.Form):
     """Form to validate the information regarding Product.
     """
     name = forms.CharField(
-        required=False,
-    )
-    materials = forms.JSONField(
-        required=False,
-    )
-    production_time = forms.DurationField(
-        required=False,
-    )
-    setup_time = forms.DurationField(
         required=False,
     )

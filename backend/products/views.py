@@ -1,12 +1,17 @@
-from django.utils.translation import gettext as _
+from django.forms import Form
+from django.utils.decorators import method_decorator
+from django.http import HttpRequest
+
 from base.generic_views import (
     BaseListView,
+    BaseFileteredListView,
     BaseCreateView,
     BaseDetailView,
     BaseUpdateView,
     BaseDeleteView,
 )
-
+from base.response import ORJsonResponse as JsonResponse
+from employees.decorators import role_validation
 from employees.models import RoleChoices
 from employees.mixins import (
     AuthenticatedUserMixin,
@@ -22,51 +27,89 @@ from .forms import (
 )
 
 
-class ProductListView(AuthenticatedUserMixin, BaseListView):
+class ProductView(
+    AuthenticatedUserMixin,
+    BaseListView,
+    BaseCreateView,
+):
+    """View Class to chandle the creation of the Product model objects.
     """
-    View Class based view to handle the filtering and listing the objects.
-    """
-    model = Product
-    form = ProductForm
-    serializer_depth = 0
+    model: type[Product] = Product
+    form: type[Form] = ProductCreationForm
+    serializer_depth: int = 0
+
+    @method_decorator(
+        decorator=role_validation(
+            allowed_roles=[
+                RoleChoices.PRODUCTION_MANAGER,
+                RoleChoices.MANAGEMENT,
+            ]
+        )
+    )
+    def post(self, request: HttpRequest, *args, **kwargs) -> JsonResponse:
+        """This method is re defined because there are different permissions to
+        different methods within the endpoint. The main idea would be to
+        assign the roles that can use this http method.
+
+        Creation of the Product.
+        """
+        return super().post(request, *args, **kwargs)
 
 
-class ProductCreationView(RoleValidatorMixin, BaseCreateView):
+class ProductFilteredView(
+    AuthenticatedUserMixin,
+    BaseFileteredListView,
+):
+    """View Class based view to handle the filtering and listing the objects.
     """
-    View Class to chandle the creation of the Product model objects.
-    """
-    allowed_roles = [
-        RoleChoices.PRODUCTION_MANAGER,
-        RoleChoices.MANAGEMENT,
-    ]
-    model = Product
-    form = ProductCreationForm
-    serializer_depth = 0
+    model: type[Product] = Product
+    form: type[Form] = ProductForm
+    serializer_depth: int = 0
 
 
-class ProductDetailView(AuthenticatedUserMixin, BaseDetailView):
-    """
-    View Class to handle the Detailed Product View.
-    """
-    model = Product
-    serializer_depth = 0
-    url_kwarg: str = "id"
-
-
-class ProductUpdateDeleteView(
-    RoleValidatorMixin,
+class ProductDUDView(
+    AuthenticatedUserMixin,
+    BaseDetailView,
     BaseUpdateView,
     BaseDeleteView,
 ):
-    """
-    View Class to handle the deatiled view, the update and the delete of the
+    """View Class to handle the deatiled view, the update and the delete of the
     Product model object.
     """
-    allowed_roles = [
-        RoleChoices.PRODUCTION_MANAGER,
-        RoleChoices.MANAGEMENT,
-    ]
-    model = Product
-    form = ProductUpdateForm
-    serializer_depth = 0
+    model: type[Product] = Product
+    form: type[Form] = ProductUpdateForm
     url_kwarg: str = "id"
+
+    @method_decorator(
+        decorator=role_validation(
+            allowed_roles=[
+                RoleChoices.PRODUCTION_MANAGER,
+                RoleChoices.MANAGEMENT,
+            ]
+        )
+    )
+    def post(self, request: HttpRequest, *args, **kwargs) -> JsonResponse:
+        """This method is re defined because there are different permissions to
+        different methods within the endpoint. The main idea would be to
+        assign the roles that can use this http method.
+
+        Update of the Product.
+        """
+        return super().post(request, *args, **kwargs)
+
+    @method_decorator(
+        decorator=role_validation(
+            allowed_roles=[
+                RoleChoices.PRODUCTION_MANAGER,
+                RoleChoices.MANAGEMENT,
+            ]
+        )
+    )
+    def delete(self, request: HttpRequest, *args, **kwargs) -> JsonResponse:
+        """This method is re defined because there are different permissions to
+        different methods within the endpoint. The main idea would be to
+        assign the roles that can use this http method.
+
+        Deletion of the Product.
+        """
+        return super().delete(request, *args, **kwargs)

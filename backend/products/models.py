@@ -3,7 +3,6 @@
 Product:
     Items created from the company that are being sold to different clients.
 """
-from django.utils.translation import gettext as _
 from django.db import models
 
 from base.models import BaseModel
@@ -16,17 +15,10 @@ class Product(BaseModel):
     ----------
     name: str
         Name of the product.
-    materials: Dict
+    materials: dict
         Dictonary of materials and ammounts needed for the creation of the
         product.
-    production_time: int
-        Time delta on which one product is created.
-    setup_time: int
-        Time delta needed to prepare the machines to start the creation of the
-        product.
     """
-    # TODO: Add mold as a OneToOne relationship
-
     name = models.CharField(
         blank=False,
         null=False,
@@ -34,15 +26,7 @@ class Product(BaseModel):
         unique=True,
     )
     materials = models.JSONField(
-        blank=False,
-        null=True,
-    )
-    production_time = models.DurationField(
-        blank=False,
-        null=True,
-    )
-    setup_time = models.DurationField(
-        blank=False,
+        blank=True,
         null=True,
     )
 
@@ -50,11 +34,3 @@ class Product(BaseModel):
         db_table = "product"
         verbose_name = "product"
         verbose_name_plural = "products"
-
-# TODO: Add something like the mold, that should be added to the product.
-# What mold should there be in the machinery.
-
-# Parameters
-# cavity number
-# cycle time => ammount of
-# weight

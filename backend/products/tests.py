@@ -46,8 +46,6 @@ class ProductsWorkflowTest(TestCase):
             "materials": json.dumps({"testing_material_1": 1, "testing_material_2": 2}),
             # "materials": {"testing_material_1": 1, "testing_material_2": 2},
             # "materials": [1, 2, 3],
-            "production_time": 3600,
-            "setup_time": 3600,
         }
         response = self.client.post(
             reverse(viewname="create_product"),
@@ -77,8 +75,6 @@ class ProductsWorkflowTest(TestCase):
         msg = {
             "name": "Testing product 2",
             "materials": json.dumps({"testing_material_3": 3, "testing_material_4": 4}),
-            "production_time": 1200,
-            "setup_time": 1200,
         }
 
         response = self.client.post(
