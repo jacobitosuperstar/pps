@@ -13,7 +13,7 @@ class AuthTokenWorkflowTest(TestCase):
         # setting up the django client
         self.client = Client()
         # creating an admin user
-        self.admin_user = Employee.objects.create_superuser(
+        self.admin_user: Employee = Employee.objects.create_superuser(
             identification="1111111111",
             names="test_super_employee",
             last_names="test_super_employee",

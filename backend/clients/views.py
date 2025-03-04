@@ -1,24 +1,13 @@
-from typing import Union, Iterable, Optional
-import secrets
-import json
-from django.http import (
-    HttpRequest,
-    JsonResponse,
-    StreamingHttpResponse,
+from base.generic_views import (
+    BaseCreateView,
+    BaseListView,
+    BaseFileteredListView,
+    BaseDetailView,
+    BaseUpdateView,
+    BaseDeleteView,
 )
-from django.utils.translation import gettext as _
-from django.views.decorators.http import require_http_methods
-from django.views.decorators.http import (
-    require_GET,
-    require_POST,
-)
-from django.db.models import Q
-from django.contrib.auth import authenticate
-from django.http import JsonResponse
-from base.http_status_codes import HTTP_STATUS as status
-from base.logger import base_logger
-
-from jwt_authentication.decorators import authenticated_user
+from employees.mixins import RoleValidatorMixin
+from employees.models import RoleChoices
 
 from .models import (
     Client,
@@ -26,10 +15,49 @@ from .models import (
 from .forms import (
     ClientCreationForm,
     ClientForm,
-)
-from .decorators import (
-    role_validation,
+    ClientUpdateForm,
 )
 
 
+class ClientView(
+    RoleValidatorMixin,
+    BaseCreateView,
+    BaseListView,
+):
+    allowed_roles = [
+        RoleChoices.MANAGEMENT,
+        RoleChoices.ACCOUNTING,
+    ]
+    model: type[Client] = Client
+    form: type[ClientCreationForm] = ClientCreationForm
+    serializer_depth = 0
 
+
+class ClientFilteredView(
+    RoleValidatorMixin,
+    BaseFileteredListView,
+):
+    allowed_roles = [
+        RoleChoices.MANAGEMENT,
+        RoleChoices.ACCOUNTING,
+    ]
+    model: type[Client] = Client
+    form: type[ClientForm] = ClientForm
+
+
+class ClientDUDView(
+    RoleValidatorMixin,
+    BaseDetailView,
+    BaseUpdateView,
+    BaseDeleteView,
+):
+    """View Class to handle the deatiled view, the update and the delete of the
+    Product model object.
+    """
+    allowed_roles = [
+        RoleChoices.MANAGEMENT,
+        RoleChoices.ACCOUNTING,
+    ]
+    model: type[Client] = Client
+    form: type[ClientUpdateForm] = ClientUpdateForm
+    url_kwarg: str = "client_id"

@@ -22,7 +22,7 @@ class Client(BaseModel):
         Email of the client.
     client_phone_code: int
         Country code phone number.
-    client_email: str
+    client_phone_number: str
         Client phone number.
     """
 
