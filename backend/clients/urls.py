@@ -11,7 +11,7 @@ urlpatterns = [
         name="clients"
     ),
     path(
-        "filetered/",
+        "filtered/",
         views.ClientFilteredView.as_view(),
         name="clients_filtered"
     ),
