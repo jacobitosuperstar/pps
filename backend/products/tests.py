@@ -21,7 +21,9 @@ class ProductsUnitTest(TestCase):
         # self.admin_user.role = RoleChoices.HR
         self.admin_user.save()
 
-        self.product
+        self.product = Product.objects.create(
+            name="Product Test",
+        )
 
         msg = {
             "identification": "1111111111",
@@ -29,13 +31,39 @@ class ProductsUnitTest(TestCase):
         }
 
         response = self.client.post(
-            reverse(viewname="login"),
+            reverse(viewname="employees_login"),
             data=msg,
         )
         response = json.loads(response.content)
         token = response.get("token")
         self.client.defaults["HTTP_AUTHORIZATION"] = f"Token {token}"
         return
+
+    def test_products_list(self):
+        """
+        """
+        ...
+
+    def test_products_creation(self):
+        """
+        """
+        ...
+
+    def test_products_detail(self):
+        """
+        """
+        ...
+
+    def test_products_update(self):
+        """
+        """
+        ...
+
+    def test_products_delete(self):
+        """
+        """
+        ...
+
 
 class ProductsWorkflowTest(TestCase):
     """
@@ -60,7 +88,7 @@ class ProductsWorkflowTest(TestCase):
         }
 
         response = self.client.post(
-            reverse(viewname="login"),
+            reverse(viewname="employees_login"),
             data=msg,
         )
         response = json.loads(response.content)
@@ -88,7 +116,7 @@ class ProductsWorkflowTest(TestCase):
         )
         self.assertEqual(
             created_product["materials"],
-            msg["materials"],
+            json.loads(msg["materials"]),
         )
         self.assertEqual(response.status_code, status.created)
 
@@ -122,7 +150,7 @@ class ProductsWorkflowTest(TestCase):
             created_product["materials"],
             product["materials"],
         )
-        self.assertEqual(response.status_code, status.accepted)
+        self.assertEqual(response.status_code, status.ok)
 
         # UPDATE PRODUCT
         msg = {
@@ -143,7 +171,7 @@ class ProductsWorkflowTest(TestCase):
         response = self.client.delete(
             reverse(
                 viewname="products_dud",
-                args=[created_product_info["id"]],
+                args=[created_product["id"]],
             )
         )
         self.assertEqual(response.status_code, status.accepted)
