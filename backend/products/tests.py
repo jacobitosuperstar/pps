@@ -21,8 +21,8 @@ class ProductsUnitTest(TestCase):
         # self.admin_user.role = RoleChoices.HR
         self.admin_user.save()
 
-        self.product = Product.objects.create(
-            name="Product Test",
+        self.product: Product = Product.objects.create(
+            name="Testing Product Base",
         )
 
         msg = {
@@ -44,25 +44,97 @@ class ProductsUnitTest(TestCase):
         """
         ...
 
-    def test_products_creation(self):
+    def test_products_filtered_list(self):
         """
         """
         ...
+
+    def test_products_creation(self):
+        """
+        """
+        msg = {
+            "name": "Testing product 1",
+            "materials": json.dumps({"testing_material_1": 1, "testing_material_2": 2}),
+        }
+        response = self.client.post(
+            reverse(viewname="products"),
+            data=msg,
+        )
+        data = json.loads(response.content)
+        created_product = data[Product._meta.verbose_name]
+        self.assertEqual(
+            created_product["name"],
+            msg["name"],
+        )
+        self.assertEqual(
+            created_product["materials"],
+            json.loads(msg["materials"]),
+        )
+        self.assertEqual(response.status_code, status.created)
 
     def test_products_detail(self):
         """
         """
-        ...
+        response = self.client.get(
+            reverse(
+                viewname="products_dud",
+                args=[self.product.id],
+            )
+        )
+        data = json.loads(response.content)
+        product = data[Product._meta.verbose_name]
+        self.assertEqual(
+            product["name"],
+            self.product.name,
+        )
+        self.assertEqual(response.status_code, status.ok)
 
     def test_products_update(self):
         """
         """
-        ...
+        msg = {
+            "materials": json.dumps({"testing_material_1": 1, "testing_material_2": 2}),
+        }
+        response = self.client.post(
+            reverse(
+                viewname="products_dud",
+                args=[self.product.id],
+            ),
+            data=msg,
+        )
+        self.assertEqual(response.status_code, status.accepted)
+        data = json.loads(response.content)
+        updated_product = data[Product._meta.verbose_name]
+
+        # Getting the product from the database to check that they are actually
+        # the same.
+        response = self.client.get(
+            reverse(
+                viewname="products_dud",
+                args=[self.product.id],
+            )
+        )
+        data = json.loads(response.content)
+        product = data[Product._meta.verbose_name]
+        self.assertEqual(
+            updated_product["name"],
+            product["name"],
+        )
+        self.assertEqual(
+            updated_product["materials"],
+            product["materials"],
+        )
 
     def test_products_delete(self):
         """
         """
-        ...
+        response = self.client.delete(
+            reverse(
+                viewname="products_dud",
+                args=[self.product.id],
+            )
+        )
+        self.assertEqual(response.status_code, status.accepted)
 
 
 class ProductsWorkflowTest(TestCase):
@@ -96,8 +168,8 @@ class ProductsWorkflowTest(TestCase):
         self.client.defaults["HTTP_AUTHORIZATION"] = f"Token {token}"
         return
 
-    def test_create_product(self):
-        """Test Creation of a product
+    def test_product_workflows(self):
+        """Test Product workflows
         """
         # CREATE A PRODUCT
         msg = {

@@ -15,7 +15,6 @@ from employees.decorators import role_validation
 from employees.models import RoleChoices
 from employees.mixins import (
     AuthenticatedUserMixin,
-    RoleValidatorMixin,
 )
 from .models import (
     Product,
