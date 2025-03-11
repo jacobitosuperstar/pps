@@ -40,12 +40,13 @@ class BaseMixin:
         will be returned.
         """
         if isinstance(objects, QuerySet):
-            serialized_objects = [element.serializer(depth=self.serializer_depth) for element in objects]
+            serialized_objects: List[Dict[str, Any]] = [element.serializer(depth=self.serializer_depth) for element in objects]
+            return serialized_objects
         elif isinstance(objects, BaseModel):
-            serialized_objects = objects.serializer(depth=self.serializer_depth)
+            serialized_object: Dict[str, Any] = objects.serializer(depth=self.serializer_depth)
+            return serialized_object
         else:
             raise NotImplementedError("The `Type` that you are passing won't be processed.")
-        return serialized_objects
 
     def validate_form(
         self,
@@ -67,9 +68,9 @@ class BaseMixin:
         request_values = {}
 
         if request.method == "GET":
-            request_values = request.GET
+            request_values: Dict = request.GET
         elif request.method == "POST":
-            request_values = request.POST
+            request_values: Dict = request.POST
 
         form: Union[ModelForm, Form] = self.form(request_values)
 
@@ -86,27 +87,27 @@ class BaseMixin:
             # come out of the form.
             form_data = form.cleaned_data.get(key)
             if form_data:
-                # if the form data exists we create the entry in the dict
+                # if the form data exists we create the entry in the Dict
                 cleaned_data[key] = form_data
         return cleaned_data
 
-    def filter_all_query(self,) -> QuerySet:
+    def filter_all_query(self,) -> QuerySet[BaseModel]:
         """Dinamically created filtering query given the data.
         """
-        queryset: QuerySet = self.model.objects.filter(is_deleted=False)
+        queryset: QuerySet[BaseModel] = self.model.objects.filter(is_deleted=False)
 
         if self.select_fields:
-            queryset: QuerySet = queryset.select_related(*self.select_fields)
+            queryset: QuerySet[BaseModel] = queryset.select_related(*self.select_fields)
 
         if self.prefetch_fields:
-            queryset: QuerySet = queryset.prefetch_related(*self.prefetch_fields)
+            queryset: QuerySet[BaseModel] = queryset.prefetch_related(*self.prefetch_fields)
 
         return queryset
 
     def filter_query(
         self,
         data: Dict[str, Any],
-    ) -> QuerySet:
+    ) -> QuerySet[BaseModel]:
         """Dinamically created filtering query given the data.
         """
         query: Q = Q()
@@ -118,13 +119,13 @@ class BaseMixin:
         for key, value in data.items():
             query &= Q(**{key:value})
 
-        queryset: QuerySet = self.model.objects.filter(query)
+        queryset: QuerySet[BaseModel] = self.model.objects.filter(query)
 
         if self.select_fields:
-            queryset: QuerySet = queryset.select_related(*self.select_fields)
+            queryset: QuerySet[BaseModel] = queryset.select_related(*self.select_fields)
 
         if self.prefetch_fields:
-            queryset: QuerySet = queryset.prefetch_related(*self.prefetch_fields)
+            queryset: QuerySet[BaseModel] = queryset.prefetch_related(*self.prefetch_fields)
 
         return queryset
 
@@ -140,13 +141,13 @@ class BaseMixin:
             query &= Q(**{key:value})
 
         try:
-            queryset: QuerySet = self.model.objects.filter(query)
+            queryset: QuerySet[BaseModel] = self.model.objects.filter(query)
 
             if self.select_fields:
-                queryset: QuerySet = queryset.select_related(*self.select_fields)
+                queryset: QuerySet[BaseModel] = queryset.select_related(*self.select_fields)
 
             if self.prefetch_fields:
-                queryset: QuerySet = queryset.prefetch_related(*self.prefetch_fields)
+                queryset: QuerySet[BaseModel] = queryset.prefetch_related(*self.prefetch_fields)
 
             db_object: BaseModel = queryset.get()
             return db_object

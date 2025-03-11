@@ -5,7 +5,7 @@ from typing import (
     Optional,
 )
 from django.db import models
-from django.utils import timezone
+# from django.utils import timezone
 
 
 class BaseModel(models.Model):
@@ -84,6 +84,3 @@ class BaseModel(models.Model):
                     # continue
             serialized_object[field_name] = field_value
         return serialized_object
-
-
-                

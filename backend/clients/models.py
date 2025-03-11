@@ -33,10 +33,12 @@ class Client(BaseModel):
         unique=True,
     )
     client_name = models.CharField(
+        max_length=100,
         null=False,
         blank=False,
     )
     client_email = models.EmailField(
+        max_length=100,
         null=False,
         blank=False,
     )

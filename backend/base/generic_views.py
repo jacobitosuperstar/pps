@@ -1,11 +1,19 @@
 """Base Mixins for the project.
 """
+from typing import Any
 from django.views import View
-from django.utils.translation import gettext as _
+from django.db.models.query import QuerySet
 from django.http import HttpRequest
-from .response import ORJsonResponse as JsonResponse
-from django.forms import ValidationError
+# from django.forms import ValidationError
+from django.utils.translation import gettext as _
+from django.core.exceptions import (
+    ValidationError,
+    ObjectDoesNotExist,
+    MultipleObjectsReturned,
+)
 
+from .models import BaseModel
+from .response import ORJsonResponse as JsonResponse
 from .logger import base_logger
 from .http_status_codes import HTTP_STATUS as status
 
@@ -18,8 +26,8 @@ class BaseListView(BaseMixin, View):
         Returns the total amount of objects given the GET request.
         """
         try:
-            query_set = self.filter_all_query()
-            data = {
+            query_set: QuerySet[self.model] = self.filter_all_query()
+            data: dict[str, dict[str, Any] | list[dict[str, Any]]] = {
                     self.model._meta.verbose_name_plural: self.serialize(query_set),
             }
             return JsonResponse(data, status=status.ok)
@@ -38,9 +46,9 @@ class BaseFileteredListView(BaseMixin, View):
         request.
         """
         try:
-            form_data = self.validate_form(request=request)
-            query_set = self.filter_query(data=form_data)
-            data = {
+            form_data: dict[str, Any] = self.validate_form(request=request)
+            query_set: QuerySet[self.model] = self.filter_query(data=form_data)
+            data: dict[str, dict[str, Any] | list[dict[str, Any]]] = {
                     self.model._meta.verbose_name_plural: self.serialize(query_set),
             }
             return JsonResponse(data, status=status.ok)
@@ -59,14 +67,14 @@ class BaseFileteredListView(BaseMixin, View):
 
 
 class BaseCreateView(BaseMixin, View):
-    def post(self, request: HttpRequest, *args, **kwargs):
+    def post(self, request: HttpRequest, *args, **kwargs) -> JsonResponse:
         """Base Post View.
         Creates a db object given the form data in the POST request.
         """
         try:
-            form_data = self.validate_form(request=request)
-            created_object = self.create_object(data=form_data)
-            msg = {
+            form_data: dict[str, Any] = self.validate_form(request=request)
+            created_object: BaseModel = self.create_object(data=form_data)
+            msg: dict[str, dict[str, Any] | list[dict[str, Any]]] = {
                 self.model._meta.verbose_name: self.serialize(created_object),
             }
             return JsonResponse(msg, status=status.created)
@@ -87,18 +95,21 @@ class BaseCreateView(BaseMixin, View):
 class BaseDetailView(BaseMixin, View):
     url_kwarg: str = "id"
 
-    def get(self, request: HttpRequest, *args, **kwargs):
+    def get(self, request: HttpRequest, *args, **kwargs) -> JsonResponse:
         """Base Detailed Get View.
         Returns the db object given the url_kwarg identifier.
         """
         try:
-            data = {self.url_kwarg: self.kwargs.get(self.url_kwarg)}
-            db_object = self.get_query(data=data)
+            data: dict[str, Any] = {self.url_kwarg: self.kwargs.get(self.url_kwarg)}
+            db_object: BaseModel = self.get_query(data=data)
             msg = {
                 self.model._meta.verbose_name: self.serialize(db_object),
             }
             return JsonResponse(msg, status=status.ok)
-        except self.model.DoesNotExist as e:
+        except MultipleObjectsReturned as e:
+            error_data = e.args[0]
+            return JsonResponse(error_data, status=status.internal_server_error)
+        except ObjectDoesNotExist as e:
             error_data = e.args[0]
             return JsonResponse(error_data, status=status.not_found)
         except Exception as e:
@@ -112,7 +123,7 @@ class BaseDetailView(BaseMixin, View):
 class BaseUpdateView(BaseMixin, View):
     url_kwarg: str = "id"
 
-    def post(self, request: HttpRequest, *args, **kwargs):
+    def post(self, request: HttpRequest, *args, **kwargs) -> JsonResponse:
         """Base Update View.
         Updates the db object given the url_kwarg identifier and the form data
         in the POST request.
@@ -129,7 +140,10 @@ class BaseUpdateView(BaseMixin, View):
         except ValidationError as e:
             error_data = e.args[0]
             return JsonResponse(error_data, status=status.bad_request)
-        except self.model.DoesNotExist as e:
+        except MultipleObjectsReturned as e:
+            error_data = e.args[0]
+            return JsonResponse(error_data, status=status.internal_server_error)
+        except ObjectDoesNotExist as e:
             error_data = e.args[0]
             return JsonResponse(error_data, status=status.not_found)
         except Exception as e:
@@ -142,7 +156,7 @@ class BaseUpdateView(BaseMixin, View):
 class BaseDeleteView(BaseMixin, View):
     url_kwarg: str = "id"
 
-    def delete(self, request: HttpRequest, *args, **kwargs):
+    def delete(self, request: HttpRequest, *args, **kwargs) -> JsonResponse:
         """Base Delete View.
         Deletes the db object given the url_kwarg identifier.
         """
@@ -154,7 +168,10 @@ class BaseDeleteView(BaseMixin, View):
                 "response": _(f"{self.model._meta.verbose_name} has been deleted.")
             }
             return JsonResponse(msg, status=status.accepted)
-        except self.model.DoesNotExist as e:
+        except MultipleObjectsReturned as e:
+            error_data = e.args[0]
+            return JsonResponse(error_data, status=status.internal_server_error)
+        except ObjectDoesNotExist as e:
             error_data = e.args[0]
             return JsonResponse(error_data, status=status.not_found)
         except Exception as e:
