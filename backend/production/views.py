@@ -53,6 +53,9 @@ class SaleOrderView(
     serializer_depth: int = 0
     allowed_roles = []
 
+    def post(self, request: HttpRequest, *args, **kwargs) -> JsonResponse:
+        return super().post(request, *args, **kwargs)
+
 
 class SaleOrderDUDView(
     RoleValidatorMixin,
@@ -122,10 +125,12 @@ class QualityEvaluationDUDView(
     allowed_roles = []
 
 
-
 @require_GET
 @role_validation(allowed_roles=[RoleChoices.QUALITY])
 def non_conforming_products(request: HttpRequest, id: int) -> JsonResponse:
+    """Returns a JSON with the list of possible non conforming products that
+    belong to a SaleOrder.
+    """
     try:
         quality_evaluation: QualityEvaluation = QualityEvaluation.objects.get(id=id)
         msg = {
@@ -139,7 +144,7 @@ def non_conforming_products(request: HttpRequest, id: int) -> JsonResponse:
         return JsonResponse(error_data, status=status.not_found)
     except QualityEvaluation.MultipleObjectsReturned:
         error_data = {
-            "response": _(f"Multiple entries of type {QualityEvaluation._meta.verbose_name} found.")
+                "response": _(f"Multiple entries of type {QualityEvaluation._meta.verbose_name} with id: {id} found.")
         }
         return JsonResponse(error_data, status=status.internal_server_error)
     except Exception as e:
