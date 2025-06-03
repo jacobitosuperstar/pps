@@ -28,7 +28,10 @@ class ExistingMachineTypes(models.TextChoices):
     PE = "plastic_extruder", _("plastic extruder")
 
 
-ExistingMachineTypes_dict = {value: label for value, label in ExistingMachineTypes.choices}
+ExistingMachineTypes_dict: dict = {
+    value: label for value, label
+    in ExistingMachineTypes.choices
+}
 
 
 class MachineType(BaseModel):

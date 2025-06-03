@@ -3,6 +3,7 @@ from django.http import (
 )
 import orjson as json
 
+
 class ORJsonResponse(HttpResponse):
     """
     An HTTP response class that consumes data to be serialized to JSON using

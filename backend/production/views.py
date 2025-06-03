@@ -138,18 +138,16 @@ def non_conforming_products(request: HttpRequest, id: int) -> JsonResponse:
         }
         return JsonResponse(msg, status=status.ok)
     except QualityEvaluation.DoesNotExist:
-        error_data = {
-            "response": _(f"{QualityEvaluation._meta.verbose_name} not found.")
-        }
+        error_data = {"response": _(f"{QualityEvaluation._meta.verbose_name} not found.")}
         return JsonResponse(error_data, status=status.not_found)
     except QualityEvaluation.MultipleObjectsReturned:
         error_data = {
-                "response": _(f"Multiple entries of type {QualityEvaluation._meta.verbose_name} with id: {id} found.")
+            "response": _(
+                f"Multiple entries of type {QualityEvaluation._meta.verbose_name} with id: {id} found."
+            )
         }
         return JsonResponse(error_data, status=status.internal_server_error)
     except Exception as e:
-        error_data = {
-            "response": _("Internal server error.")
-        }
+        error_data = {"response": _("Internal server error.")}
         base_logger.critical(e)
         return JsonResponse(error_data, status=status.internal_server_error)

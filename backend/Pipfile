@@ -9,9 +9,11 @@ django = "<= 5.2"
 django-cors-headers = "*"
 pyjwt = "*"
 orjson = "*"
+pydantic = "*"
 
 [dev-packages]
 ruff = "*"
+python-lsp-server = "*"
 
 [requires]
 python_version = "*"
