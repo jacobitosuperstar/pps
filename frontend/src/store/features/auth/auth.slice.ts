@@ -1,9 +1,15 @@
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { type PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { authInitialState } from "./auth.init";
 
 interface LoginUserPayload {
   token: string;
-  remenberedId: string;
+  user: {
+    identification: string;
+    names: string;
+    last_names: string;
+    role: string;
+    birthday: string | null;
+  };
 }
 
 export const authSlice = createSlice({
@@ -14,11 +20,12 @@ export const authSlice = createSlice({
     loginUser: (state, action: PayloadAction<LoginUserPayload>) => {
       state.isAuthenticate = true;
       state.token = action.payload.token;
-      state.remenberedId = action.payload.remenberedId;
+      state.user = action.payload.user;
     },
     logoutUser: (state) => {
       state.isAuthenticate = false;
       state.token = null;
+      state.user = null;
     },
   },
 });

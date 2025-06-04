@@ -1,33 +1,18 @@
 import { RouterProvider } from "react-router-dom";
-import { ThemeProvider } from "@emotion/react";
-import { CssBaseline } from "@mui/material";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { router } from "./router";
-import theme from "./theme";
+import { Toaster } from "./components/ui/sonner";
 import { Provider } from "react-redux";
-import { store } from "./store";
-import { SnackbarProvider } from "notistack";
-import { ConfirmProvider } from "material-ui-confirm";
-import "dayjs/locale/es";
+import { store } from "./store/store";
 
-const App = () => {
+function App() {
   return (
     <>
       <Provider store={store}>
-        <ThemeProvider theme={theme}>
-          <LocalizationProvider adapterLocale="es" dateAdapter={AdapterDayjs}>
-            <ConfirmProvider>
-              <SnackbarProvider autoHideDuration={7000}>
-                <CssBaseline />
-                <RouterProvider router={router} />;
-              </SnackbarProvider>
-            </ConfirmProvider>
-          </LocalizationProvider>
-        </ThemeProvider>
+        <RouterProvider router={router} />
+        <Toaster position="top-center" richColors />
       </Provider>
     </>
   );
-};
+}
 
 export default App;

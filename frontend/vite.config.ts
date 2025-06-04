@@ -1,34 +1,33 @@
-/// <reference types="vitest" />
-/// <reference types="Vite/client" />
-
-import { fileURLToPath, URL } from "node:url";
+import path from "path";
+import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import { configDefaults } from "vitest/config";
+import Unfonts from "unplugin-fonts/vite";
 
-// https://vitejs.dev/config/
+// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  test: {
-    environment: "jsdom",
-    globals: true,
-    exclude: [...configDefaults.exclude, "./e2e/*"],
+  plugins: [
+    react(),
+    tailwindcss(),
+    Unfonts({
+      custom: {
+        families: [
+          {
+            name: "Geist",
+            src: "./src/assets/fonts/geist/*.woff2",
+          },
+        ],
+      },
+    }),
+  ],
+  base: process.env.NODE_ENV === "production" ? "/static/" : "/",
+  build: {
+    outDir: "../backend/static/",
+    emptyOutDir: true,
   },
   resolve: {
     alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@": path.resolve(__dirname, "./src"),
     },
-  },
-  preview: {
-    port: 5173,
-    strictPort: true,
-  },
-  server: {
-    watch: {
-      usePolling: true,
-    },
-    host: true, // needed for the Docker Container port mapping to work
-    strictPort: true,
-    port: 5173, // you can replace this port with any port
   },
 });

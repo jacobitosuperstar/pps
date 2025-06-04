@@ -1,16 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-// import logger from "redux-logger";
+import { useDispatch, useSelector } from "react-redux";
+import type { TypedUseSelectorHook } from "react-redux";
 import { authSlice, authPreloadState, authListener } from "./features/auth";
-import { authApi, employeesApi, machinesApi } from "./apis";
-import { sharedSlice } from "./features/shared";
+import { authApi } from "./apis/auth.api";
+import { employeesApi } from "./apis/employees.api";
+import { machinesApi } from "./apis/machines.api";
 
 export const store = configureStore({
   reducer: {
     [authSlice.name]: authSlice.reducer,
     [authApi.reducerPath]: authApi.reducer,
-    //
-    [sharedSlice.name]: sharedSlice.reducer,
     //
     [employeesApi.reducerPath]: employeesApi.reducer,
     //

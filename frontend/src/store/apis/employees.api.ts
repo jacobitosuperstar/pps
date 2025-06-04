@@ -1,17 +1,18 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { appBaseQuery } from "./basequery";
 import { objectToFormData } from "@/helper/object-to-formdata";
-import {
+import type {
   CreateEmployeeDto,
-  CreateEmployeeResponse,
   Employee,
-  Role,
-  RolesObject,
   OOOTypesResponse,
   OOOType,
   CreateOooDto,
   CreateOooResponse,
   OOOModel,
+  GetRolesResponse,
+  UpdateEmployeeDto,
+  GetEmployeesParams,
+  GetEmployeesResponse,
 } from "@/interfaces/employees.interface";
 
 export const employeesApi = createApi({
@@ -19,46 +20,44 @@ export const employeesApi = createApi({
   baseQuery: appBaseQuery,
   tagTypes: ["employees", "ooo"],
   endpoints: (builder) => ({
-    getRoles: builder.query<Role[], void>({
+    // employees
+    getRoles: builder.query<GetRolesResponse, void>({
       query: () => "/employees/roles/",
-      transformResponse(response: RolesObject) {
-        if (!response) return [];
-
-        return Object.keys(response).map((x) => {
-          const key = x as keyof RolesObject;
-          return {
-            id: key,
-            name: response[key] as string,
-          };
-        });
-      },
     }),
-    getEmployees: builder.query<Employee[], void>({
-      query: () => ({
+    getEmployees: builder.query<GetEmployeesResponse, GetEmployeesParams>({
+      query: (params) => ({
         url: "/employees/",
+        params,
       }),
-      transformResponse(response: any) {
-        return response?.employess || [];
-      },
       providesTags: ["employees"],
     }),
-    createEmployee: builder.mutation<CreateEmployeeResponse, CreateEmployeeDto>(
-      {
-        query: (body) => ({
-          url: "/employees/create_employee/",
-          method: "POST",
-          body: objectToFormData(body),
-        }),
-        invalidatesTags: ["employees"],
-      }
-    ),
+    getEmployeeById: builder.query<Employee, number>({
+      query: (id) => ({
+        url: `/employees/${id}/`,
+      }),
+      providesTags: ["employees"],
+    }),
+    createEmployee: builder.mutation<Employee, CreateEmployeeDto>({
+      query: (body) => ({
+        url: "/employees/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["employees"],
+    }),
+    updateEmployee: builder.mutation<Employee, UpdateEmployeeDto>({
+      query: ({ id, ...body }) => ({
+        url: `/employees/${id}/`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["employees"],
+    }),
+    // ooo
     getAllOoo: builder.query<OOOModel[], void>({
       query: () => ({
         url: "/employees/list_ooo/",
       }),
-      transformResponse(response: any) {
-        return response.ooo_list;
-      },
       providesTags: ["ooo"],
     }),
     createOoo: builder.mutation<CreateOooResponse, CreateOooDto>({
@@ -98,9 +97,12 @@ export const employeesApi = createApi({
 });
 
 export const {
-  useGetEmployeesQuery,
+  // employees
   useGetRolesQuery,
+  useGetEmployeesQuery,
+  useGetEmployeeByIdQuery,
   useCreateEmployeeMutation,
+  // ooo
   useGetAllOooQuery,
   useGetAllOooTypesQuery,
   useCreateOooMutation,

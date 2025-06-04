@@ -1,41 +1,43 @@
-export interface RolesObject {
-  accounting: string;
-  hr: string;
-  management: string;
-  prod: string;
-  prod_manager: string;
-  quality: string;
+export type GetRolesResponse = {
+  label: string;
+  value: string;
+}[];
+export interface Employee {
+  id: number;
+  identification: string;
+  names: string;
+  last_names: string;
+  role: string;
+  birthday: string | null;
 }
 
-export interface Role {
-  id: keyof RolesObject;
-  name: string;
+export interface GetEmployeesParams {
+  search?: string;
+  page?: number;
+  page_size?: number;
 }
-export interface Employee {
-  birthday: string | null;
-  created_at: string;
-  date_joined: string;
-  identification: string;
-  is_deleted: false;
-  last_login: string;
-  last_names: string;
-  names: string;
-  role: keyof RolesObject;
-  updated_at: string;
+
+export interface GetEmployeesResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Employee[];
 }
 
 export interface CreateEmployeeDto {
   identification: string;
   names: string;
   last_names: string;
-  birthday: string;
   role: string;
+  birthday: string;
 }
 
-export interface CreateEmployeeResponse {
-  identification: string;
+export interface UpdateEmployeeDto {
+  id: number;
+  names: string;
+  last_names: string;
   role: string;
-  generated_password: string | undefined;
+  birthday: string;
 }
 
 // OOO

@@ -5,5 +5,12 @@ export interface LoginDto {
 
 export interface LoginResponse {
   response: string;
+  employee: {
+    identification: string;
+    names: string;
+    last_names: string;
+    role: string;
+    birthday: string | null;
+  };
   token: string;
 }

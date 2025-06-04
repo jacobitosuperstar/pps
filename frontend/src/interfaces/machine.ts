@@ -1,4 +1,4 @@
-import { Employee } from "./employees.interface";
+import type { Employee } from "./employees.interface";
 
 export interface MachineTypeKeys {
   plastic_inyector: string;
