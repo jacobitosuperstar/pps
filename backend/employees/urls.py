@@ -7,7 +7,7 @@ from . import views
 urlpatterns = [
     path(
         "roles/",
-        views.employee_roles_view,
+        views.EmployeeRolesView.as_view(),
         name="employees_roles"
     ),
     path(
@@ -17,7 +17,7 @@ urlpatterns = [
     ),
     path(
         "login/",
-        views.employee_login_view,
+        views.EmployeeLoginView.as_view(),
         name="employees_login"
     ),
     path(

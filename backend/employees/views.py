@@ -12,8 +12,14 @@ from django.views.decorators.http import (
 from django.contrib.auth import authenticate
 from django.forms import ValidationError
 
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from drf_spectacular.utils import extend_schema
+
 from base.response import ORJsonResponse as JsonResponse
-from base.http_status_codes import HTTP_STATUS as status
+from base.http_status_codes import HTTP_STATUS
 from base.logger import base_logger
 from base.generic_views import (
     BaseListView,
@@ -38,6 +44,7 @@ from .models import (
     OOO,
     RoleChoices_dict,
     OOOTypes_dict,
+    Role_list
 )
 from .forms import (
     EmployeeAuthenticationForm,
@@ -47,52 +54,75 @@ from .forms import (
     OOOForm,
 )
 
+from .serializers import (
+    EmployeeAuthenticationSerializer,
+    EmployeeLoginResponseSerializer,
+    EmployeeSerializer,
+    ErrorResponseSerializer,
+    RoleChoicesResponseSerializer,
+)
 
-@require_GET
-@authenticated_user
-def employee_roles_view(request: HttpRequest) -> JsonResponse:
-    """List of work roles for the different kind of employees.
-    """
-    return JsonResponse(RoleChoices_dict)
 
 
-@require_POST
-def employee_login_view(request: HttpRequest) -> JsonResponse:
-    """Logs in the employee into the platform.
-    """
-    form: EmployeeAuthenticationForm = EmployeeAuthenticationForm(request.POST)
+class EmployeeRolesView(APIView):
+    serializer_class = RoleChoicesResponseSerializer
+    # permission_classes = [IsAuthenticated]
 
-    if not form.is_valid():
-        msg = {
-            "response": _("Error in the information given"),
-            "errors": form.errors,
+    @extend_schema(
+        description="List of work roles for the different kind of employees.",
+        responses={
+            status.HTTP_200_OK: RoleChoicesResponseSerializer,
         }
-        return JsonResponse(msg, status=status.bad_request)
-
-    identification = form.cleaned_data.get("identification")
-    password = form.cleaned_data.get("password")
-    employee: Optional[Employee] = authenticate(
-        request,
-        identification=identification,
-        password=password
     )
-    if not employee:
-        msg = {
-            "response": _("Invalid credentials, check the ID or the Password"),
+    def get(self, request):
+        return Response({"roles": Role_list}, status=status.HTTP_200_OK)
+
+
+class EmployeeLoginView(APIView):
+    serializer_class = EmployeeAuthenticationSerializer
+
+    @extend_schema(
+        description="Login endpoint for employees.",
+        request=EmployeeAuthenticationSerializer,
+        responses={
+            status.HTTP_200_OK: EmployeeLoginResponseSerializer,
+            status.HTTP_400_BAD_REQUEST: ErrorResponseSerializer,
         }
-        return JsonResponse(msg, status=status.bad_request)
-
-    token = create_token(
-        employee_id=employee.id,
-        employee_role=employee.role,
     )
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if not serializer.is_valid():
+            return Response({
+                "response": _("Error in the information given"),
+                "errors": serializer.errors,
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-    msg = {
-        "response": _("Logged in successfully"),
-        "employee": employee.serializer(depth=0),
-        "token": token,
-    }
-    return JsonResponse(msg)
+        identification = serializer.validated_data['identification']
+        password = serializer.validated_data['password']
+        employee = authenticate(
+            request,
+            identification=identification,
+            password=password
+        )
+        if not employee:
+            msg = {
+                "response": _("Invalid credentials, check the ID or the Password"),
+            }
+            return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+
+        token = create_token(
+            employee_id=employee.id,
+            employee_role=employee.role,
+        )
+
+        serialized_employee = EmployeeSerializer(employee, context={"request": request})
+
+        msg = {
+            "response": _("Logged in successfully"),
+            "employee": serialized_employee.data,
+            "token": token,
+        }
+        return Response(msg, status=status.HTTP_200_OK)
 
 
 class EmployessView(
@@ -127,13 +157,13 @@ class EmployessView(
             }
             if password:
                 msg["generated_password"] = password
-            return JsonResponse(msg, status=status.created)
+            return JsonResponse(msg, status=HTTP_STATUS.created)
         except Exception as e:
             msg = {
                 "response": _("Internal server error.")
             }
             base_logger.critical(e)
-            return JsonResponse(msg, status=status.internal_server_error)
+            return JsonResponse(msg, status=HTTP_STATUS.internal_server_error)
 
 
 class EmployessFilteredView(
@@ -181,19 +211,19 @@ class EmployeeDUDView(
             }
             if form["password"]:
                 msg["generated_password"] = form["password"]
-            return JsonResponse(msg, status=status.accepted)
+            return JsonResponse(msg, status=HTTP_STATUS.accepted)
         except ValidationError as e:
             error_data = e.args[0]
-            return JsonResponse(error_data, status=status.bad_request)
+            return JsonResponse(error_data, status=HTTP_STATUS.bad_request)
         except self.model.DoesNotExist as e:
             error_data = e.args[0]
-            return JsonResponse(error_data, status=status.not_found)
+            return JsonResponse(error_data, status=HTTP_STATUS.not_found)
         except Exception as e:
             error_data = {
                 "response": _("Internal server error.")
             }
             base_logger.critical(e)
-            return JsonResponse(error_data, status=status.internal_server_error)
+            return JsonResponse(error_data, status=HTTP_STATUS.internal_server_error)
 
     method_decorator(decorator=role_validation(allowed_roles=[RoleChoices.HR]))
     def delete(self, request: HttpRequest, *args, **kwargs):
@@ -207,16 +237,16 @@ class EmployeeDUDView(
             msg = {
                 "response": _(f"{self.model._meta.verbose_name} has been deleted.")
             }
-            return JsonResponse(msg, status=status.accepted)
+            return JsonResponse(msg, status=HTTP_STATUS.accepted)
         except self.model.DoesNotExist as e:
             error_data = e.args[0]
-            return JsonResponse(error_data, status=status.not_found)
+            return JsonResponse(error_data, status=HTTP_STATUS.not_found)
         except Exception as e:
             error_data = {
                 "response": _("Internal server error.")
             }
             base_logger.critical(e)
-            return JsonResponse(error_data, status=status.internal_server_error)
+            return JsonResponse(error_data, status=HTTP_STATUS.internal_server_error)
 
 
 @require_GET

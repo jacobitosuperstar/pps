@@ -11,6 +11,8 @@ services:
       - "8000"
     ports:
       - "8000:8000"
+    depends_on:
+      - frontend
     # volumes:
     #   - ./backend/:/app/
     env_file:
@@ -30,19 +32,5 @@ services:
   # Frontend App
   frontend:
     build:
-      context: .
-      dockerfile: ./frontend/Dockerfile
-    ports:
-      - "5173:5173"
-    expose:
-      - "5173"
-    networks:
-      - server_network
-    volumes:
-      - ./frontend/:/app/
-    command: >
-      sh -c "
-      npm run dev
-      "
-    depends_on:
-      - backend
+      context: ./frontend
+      dockerfile: ./Dockerfile
