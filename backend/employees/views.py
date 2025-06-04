@@ -2,11 +2,13 @@ import secrets
 from django.http import (
     HttpRequest,
 )
+from django.db.models import Q
 from django.utils.translation import gettext as _
 from django.utils.decorators import method_decorator
 from django.contrib.auth import authenticate
 from django.forms import ValidationError
 
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
@@ -48,6 +50,7 @@ from .forms import (
 )
 
 from .serializers import (
+    CommonFilterSerializer,
     CreateEmployeeSerializer,
     EmployeeAuthenticationSerializer,
     EmployeeLoginResponseSerializer,
@@ -126,13 +129,34 @@ class EmployeeViewSet(viewsets.ViewSet):
     renderer_classes = [JSONRenderer]
     
     @extend_schema(
+        parameters=CommonFilterSerializer,
         responses=EmployeeSerializer,
         description="List all employees.",
     )
     def list(self, request):
-        employees = Employee.objects.all()
-        serializer = EmployeeSerializer(employees, many=True)
-        return Response(serializer.data)
+        filter_serializer = CommonFilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+        filters = filter_serializer.validated_data
+        
+        queryset = Employee.objects.all()
+
+        # Filtro de búsqueda por nombre, apellido o identificación
+        search = filters.get('search')
+
+        if search:
+            queryset = queryset.filter(
+                Q(identification__icontains=search) |
+                Q(names__icontains=search) |
+                Q(last_names__icontains=search)
+            )
+
+        # Paginación
+        paginator = PageNumberPagination()
+        paginator.page_size = filters.get('page_size', 10)
+        paginated_qs = paginator.paginate_queryset(queryset, request)
+
+        serializer = EmployeeSerializer(paginated_qs, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     @extend_schema(
         responses=EmployeeSerializer,

@@ -2,6 +2,10 @@ from rest_framework import serializers
 from employees.models import Employee, RoleChoices
 
 # Commons
+class CommonFilterSerializer(serializers.Serializer):
+    page = serializers.IntegerField(required=False, min_value=1, default=1)
+    page_size = serializers.IntegerField(required=False, min_value=1, default=10)
+    search = serializers.CharField(required=False, max_length=100, default="")
 class ErrorResponseSerializer(serializers.Serializer):
     response = serializers.CharField()
     errors = serializers.JSONField()
@@ -40,7 +44,7 @@ class CreateEmployeeSerializer(serializers.ModelSerializer):
         initial=RoleChoices.PRODUCTION,
         required=True,
     )
-    
+
     class Meta:
         model = Employee
         fields = ["identification", "names", "last_names", "role", "birthday"]
