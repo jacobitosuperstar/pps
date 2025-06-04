@@ -1,21 +1,17 @@
-from typing import Optional
 import secrets
 from django.http import (
     HttpRequest,
 )
 from django.utils.translation import gettext as _
 from django.utils.decorators import method_decorator
-from django.views.decorators.http import (
-    require_GET,
-    require_POST,
-)
 from django.contrib.auth import authenticate
 from django.forms import ValidationError
 
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
 from drf_spectacular.utils import extend_schema
 
 from base.response import ORJsonResponse as JsonResponse
@@ -30,24 +26,21 @@ from base.generic_views import (
     BaseDeleteView,
 )
 
-from jwt_authentication.jwt_authentication import create_token
-from jwt_authentication.decorators import authenticated_user
+from jwt_authentication.jwt_authentication import JWTAuthentication, create_token
 
-from .decorators import role_validation
+from .decorators import IsEmployeeRole, role_validation
 from .mixins import (
     RoleValidatorMixin,
 )
 
 from .models import (
     Employee,
+    OOOTypes_list,
     RoleChoices,
     OOO,
-    RoleChoices_dict,
-    OOOTypes_dict,
     Role_list
 )
 from .forms import (
-    EmployeeAuthenticationForm,
     EmployeeCreationForm,
     EmployeeForm,
     OOOCreationForm,
@@ -55,18 +48,21 @@ from .forms import (
 )
 
 from .serializers import (
+    CreateEmployeeSerializer,
     EmployeeAuthenticationSerializer,
     EmployeeLoginResponseSerializer,
     EmployeeSerializer,
     ErrorResponseSerializer,
+    OOOTypesResponseSerializer,
     RoleChoicesResponseSerializer,
+    UpdateEmployeeSerializer,
 )
 
 
 
 class EmployeeRolesView(APIView):
-    serializer_class = RoleChoicesResponseSerializer
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         description="List of work roles for the different kind of employees.",
@@ -75,7 +71,7 @@ class EmployeeRolesView(APIView):
         }
     )
     def get(self, request):
-        return Response({"roles": Role_list}, status=status.HTTP_200_OK)
+        return Response({"types": Role_list}, status=status.HTTP_200_OK)
 
 
 class EmployeeLoginView(APIView):
@@ -123,6 +119,61 @@ class EmployeeLoginView(APIView):
             "token": token,
         }
         return Response(msg, status=status.HTTP_200_OK)
+    
+class EmployeeViewSet(viewsets.ViewSet):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsEmployeeRole(['admin', 'hr'])]
+    renderer_classes = [JSONRenderer]
+    
+    @extend_schema(
+        responses=EmployeeSerializer,
+        description="List all employees.",
+    )
+    def list(self, request):
+        employees = Employee.objects.all()
+        serializer = EmployeeSerializer(employees, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(
+        responses=EmployeeSerializer,
+        description="Retrieve a single employee by ID.",
+    )
+    def retrieve(self, request, pk=None):
+        try:
+            employee = Employee.objects.get(pk=pk)
+        except Employee.DoesNotExist: # pylint: disable=no-member
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = EmployeeSerializer(employee)
+        return Response(serializer.data)
+
+    @extend_schema(
+        request=CreateEmployeeSerializer,
+        responses=EmployeeSerializer,
+        description="Create a new employee.",
+    )
+    def create(self, request):
+        serializer = CreateEmployeeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @extend_schema(
+        request=UpdateEmployeeSerializer,
+        responses=EmployeeSerializer,
+        description="Update an employee by ID.",
+    )
+    def update(self, request, pk=None):
+        try:
+            employee = Employee.objects.get(pk=pk)
+        except Employee.DoesNotExist: # pylint: disable=no-member
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UpdateEmployeeSerializer(employee, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class EmployessView(
@@ -249,12 +300,14 @@ class EmployeeDUDView(
             return JsonResponse(error_data, status=HTTP_STATUS.internal_server_error)
 
 
-@require_GET
-@authenticated_user
-def employee_ooo_types_view(request: HttpRequest) -> JsonResponse:
-    """List of work roles for the different kind of employees.
-    """
-    return JsonResponse(OOOTypes_dict)
+class EmployeeOOOTypesView(APIView):
+
+    @extend_schema(
+        description="List of out-of-office types for employees.",
+        responses={status.HTTP_200_OK: OOOTypesResponseSerializer},
+    )
+    def get(self, request):
+        return Response({"types": OOOTypes_list}, status=status.HTTP_200_OK)
 
 
 class OOOsView(

@@ -1,7 +1,11 @@
 """Machines module endpoints.
 """
-from django.urls import path
+from rest_framework.routers import DefaultRouter
+from django.urls import path, include
 from . import views
+
+router = DefaultRouter()
+router.register(r'', views.EmployeeViewSet, basename='employee')
 
 
 urlpatterns = [
@@ -12,18 +16,13 @@ urlpatterns = [
     ),
     path(
         "ooo_types/",
-        views.employee_ooo_types_view,
+        views.EmployeeOOOTypesView.as_view(),
         name="employees_ooo_types"
     ),
     path(
         "login/",
         views.EmployeeLoginView.as_view(),
         name="employees_login"
-    ),
-    path(
-        "",
-        views.EmployessView.as_view(),
-        name="employees"
     ),
     path(
         "filtered/",
@@ -50,4 +49,5 @@ urlpatterns = [
         views.EmployeeDUDView.as_view(),
         name="employees_dud_employee"
     ),
+    path('', include(router.urls)),
 ]
