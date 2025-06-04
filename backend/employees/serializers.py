@@ -82,9 +82,9 @@ class EmployeeLoginResponseSerializer(serializers.Serializer):
 
 # Role choices serializer
 class RoleChoicesResponseSerializer(serializers.Serializer):
-    types = serializers.ListField(
-        child=serializers.CharField(),
-        help_text="List of available roles for employees."
+    label = serializers.CharField()
+    value = serializers.ChoiceField(
+        choices=RoleChoices.choices,
     )
 
 # OOO types serializer

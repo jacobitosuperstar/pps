@@ -32,7 +32,7 @@ class RoleChoices(models.TextChoices):
 
 RoleChoices_dict = {value: label for value, label in RoleChoices.choices}
 
-Role_list = [value for value, label in RoleChoices.choices]
+Role_list = [{"label": label.capitalize(), "value": value} for value, label in RoleChoices.choices]
 
 
 class EmployessManager(BaseUserManager):

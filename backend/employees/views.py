@@ -70,11 +70,11 @@ class EmployeeRolesView(APIView):
     @extend_schema(
         description="List of work roles for the different kind of employees.",
         responses={
-            status.HTTP_200_OK: RoleChoicesResponseSerializer,
+            status.HTTP_200_OK: RoleChoicesResponseSerializer(many=True),
         }
     )
     def get(self, request):
-        return Response({"types": Role_list}, status=status.HTTP_200_OK)
+        return Response(Role_list, status=status.HTTP_200_OK)
 
 
 class EmployeeLoginView(APIView):
@@ -129,7 +129,7 @@ class EmployeeViewSet(viewsets.ViewSet):
     renderer_classes = [JSONRenderer]
     
     @extend_schema(
-        parameters=CommonFilterSerializer,
+        parameters=[CommonFilterSerializer],
         responses=EmployeeSerializer,
         description="List all employees.",
     )
