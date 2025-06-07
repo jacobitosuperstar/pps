@@ -107,6 +107,7 @@ class OOOTypesResponseSerializer(serializers.Serializer):
 
 # OOO serializers
 class OOOSerializer(serializers.ModelSerializer):
+    employee = EmployeeSerializer(read_only=True)
     class Meta:
         model = OOO
         fields = ["id","employee", "ooo_type", "start_date", "end_date", "description"]
