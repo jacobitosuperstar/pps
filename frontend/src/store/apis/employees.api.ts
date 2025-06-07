@@ -1,18 +1,13 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { appBaseQuery } from "./basequery";
-import { objectToFormData } from "@/helper/object-to-formdata";
 import type {
-  CreateEmployeeDto,
+  CreateEmployeeDTO,
   Employee,
-  OOOTypesResponse,
-  OOOType,
-  CreateOooDto,
-  CreateOooResponse,
-  OOOModel,
   GetRolesResponse,
-  UpdateEmployeeDto,
+  UpdateEmployeeDTO,
   GetEmployeesParams,
   GetEmployeesResponse,
+  GetOptionsResponse,
 } from "@/interfaces/employees.interface";
 
 export const employeesApi = createApi({
@@ -31,13 +26,37 @@ export const employeesApi = createApi({
       }),
       providesTags: ["employees"],
     }),
+    getEmployeesOptions: builder.infiniteQuery<
+      GetOptionsResponse,
+      GetEmployeesParams,
+      number
+    >({
+      query: ({ pageParam, queryArg: { search, page_size } }) => ({
+        url: "/employees/options/",
+        params: {
+          page: pageParam,
+          search: search || undefined,
+          page_size,
+        },
+      }),
+      providesTags: ["employees"],
+      infiniteQueryOptions: {
+        initialPageParam: 1,
+        getNextPageParam: (res) =>
+          res.next ? Number(res.next.split("?")[1].split("=")[1]) : undefined,
+        getPreviousPageParam: (res) =>
+          res.previous
+            ? Number(res.previous.split("?")[1].split("=")[1])
+            : undefined,
+      },
+    }),
     getEmployeeById: builder.query<Employee, number>({
       query: (id) => ({
         url: `/employees/${id}/`,
       }),
       providesTags: ["employees"],
     }),
-    createEmployee: builder.mutation<Employee, CreateEmployeeDto>({
+    createEmployee: builder.mutation<Employee, CreateEmployeeDTO>({
       query: (body) => ({
         url: "/employees/",
         method: "POST",
@@ -45,7 +64,7 @@ export const employeesApi = createApi({
       }),
       invalidatesTags: ["employees"],
     }),
-    updateEmployee: builder.mutation<Employee, UpdateEmployeeDto>({
+    updateEmployee: builder.mutation<Employee, UpdateEmployeeDTO>({
       query: ({ id, ...body }) => ({
         url: `/employees/${id}/`,
         method: "PUT",
@@ -53,58 +72,23 @@ export const employeesApi = createApi({
       }),
       invalidatesTags: ["employees"],
     }),
-    // ooo
-    getAllOoo: builder.query<OOOModel[], void>({
-      query: () => ({
-        url: "/employees/list_ooo/",
-      }),
-      providesTags: ["ooo"],
-    }),
-    createOoo: builder.mutation<CreateOooResponse, CreateOooDto>({
-      query: (body) => ({
-        url: "/employees/create_ooo/",
-        method: "POST",
-        body: objectToFormData(body),
-      }),
-      invalidatesTags: ["ooo"],
-    }),
-    deleteOoo: builder.mutation<CreateOooResponse, number>({
+    deactivateEmployee: builder.mutation<Employee, number>({
       query: (id) => ({
-        url: `/employees/delete_ooo/${id}`,
-        method: "DELETE",
+        url: `/employees/${id}/deactivate/`,
+        method: "POST",
       }),
-      invalidatesTags: ["ooo"],
-    }),
-    getAllOooTypes: builder.query<OOOType[], void>({
-      query: () => ({
-        url: "/employees/ooo_types/",
-      }),
-      transformResponse(oooTypes: OOOTypesResponse) {
-        const data: OOOType[] = [];
-
-        for (const p in oooTypes) {
-          const key = p as keyof OOOTypesResponse;
-          data.push({
-            id: key,
-            label: oooTypes[key],
-          });
-        }
-
-        return data;
-      },
+      invalidatesTags: ["employees"],
     }),
   }),
 });
 
 export const {
-  // employees
   useGetRolesQuery,
   useGetEmployeesQuery,
   useGetEmployeeByIdQuery,
+  useLazyGetEmployeeByIdQuery,
   useCreateEmployeeMutation,
-  // ooo
-  useGetAllOooQuery,
-  useGetAllOooTypesQuery,
-  useCreateOooMutation,
-  useDeleteOooMutation,
+  useUpdateEmployeeMutation,
+  useDeactivateEmployeeMutation,
+  useGetEmployeesOptionsInfiniteQuery,
 } = employeesApi;

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   flexRender,
   getCoreRowModel,
   useReactTable,
+  type ColumnDef,
 } from "@tanstack/react-table";
 import {
   Table,
@@ -12,21 +13,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ClientsTablePagination } from "./clients-table-pagination";
-import { ClientsTableToolbar } from "./clients-table-toolbar";
-import { columns } from "./columns";
+import { TablePagination } from "@/components/table-pagination";
+import { TableToolbar } from "@/components/table-toolbar";
 import type { Employee } from "@/interfaces/employees.interface";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { PATHS } from "@/constant/paths";
+import { Edit } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useGetRolesQuery } from "@/store/apis/employees.api";
+import { DeleteButton } from "./delete-button";
 
 interface Props {
   data: Employee[];
   isLoading: boolean;
 }
 
-export function EmployeesTable({ data, isLoading }: Props) {
+export function DataTable({ data, isLoading }: Props) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Obtener valores iniciales desde la URL
+  // states
   const initialGlobalFilter = searchParams.get("search") || "";
   const initialPageIndex = Number(searchParams.get("page") || "1") - 1;
   const initialPageSize = Number(searchParams.get("page_size") || "10");
@@ -37,7 +42,73 @@ export function EmployeesTable({ data, isLoading }: Props) {
     pageSize: initialPageSize,
   });
 
-  // Sincronizar el globalFilter con la URL
+  // queries
+  const { data: roles = [] } = useGetRolesQuery();
+  const rolesDict = useMemo(() => {
+    return roles.reduce((acc, role) => {
+      acc[role.value] = role.label;
+      return acc;
+    }, {} as Record<string, string>);
+  }, [roles]);
+
+  const columns: ColumnDef<Employee>[] = [
+    {
+      accessorKey: "identification",
+      header: "Identificación",
+      cell: ({ row }) => <div>{row.getValue("identification")}</div>,
+    },
+    {
+      accessorKey: "names",
+      header: "Nombre",
+      cell: ({ row }) => <div>{row.getValue("names")}</div>,
+    },
+    {
+      accessorKey: "last_names",
+      header: "Apellido",
+      cell: ({ row }) => <div>{row.getValue("last_names")}</div>,
+    },
+    {
+      accessorKey: "role",
+      header: "Rol",
+      cell: ({ row }) => <div>{rolesDict[row.getValue("role") as string]}</div>,
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const employee = row.original;
+
+        return (
+          <div className="flex items-center gap-2">
+            <Link
+              to={PATHS.EMPLOYEES.EDIT.replace(":id", employee.id.toString())}
+            >
+              <Button variant="default" size="icon" className="size-8">
+                <Edit />
+              </Button>
+            </Link>
+            <DeleteButton employeeId={employee.id} />
+          </div>
+        );
+      },
+    },
+  ];
+
+  const table = useReactTable({
+    data: data,
+    columns,
+    onGlobalFilterChange: setGlobalFilter,
+    getCoreRowModel: getCoreRowModel(),
+    onPaginationChange: setPagination,
+    manualPagination: true,
+    manualSorting: true,
+    manualFiltering: true,
+    state: {
+      pagination,
+      globalFilter,
+    },
+  });
+
+  // effects
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
 
@@ -52,24 +123,9 @@ export function EmployeesTable({ data, isLoading }: Props) {
     setSearchParams(params);
   }, [globalFilter, pagination, setSearchParams, searchParams]);
 
-  const table = useReactTable({
-    data: data, // Aquí deberías usar los datos paginados del backend
-    columns,
-    onGlobalFilterChange: setGlobalFilter,
-    getCoreRowModel: getCoreRowModel(),
-    onPaginationChange: setPagination,
-    manualPagination: true,
-    manualSorting: true,
-    manualFiltering: true,
-    state: {
-      pagination,
-      globalFilter,
-    },
-  });
-
   return (
     <div className="space-y-4">
-      <ClientsTableToolbar table={table} />
+      <TableToolbar table={table} createUrl={PATHS.EMPLOYEES.CREATE} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -106,7 +162,7 @@ export function EmployeesTable({ data, isLoading }: Props) {
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className="cursor-pointer hover:bg-muted/50"
-                  //   onClick={() => router.push(`/clients/${row.original.id}`)}
+                  //   onClick={() => router.push(`//${row.original.id}`)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -131,7 +187,7 @@ export function EmployeesTable({ data, isLoading }: Props) {
           </TableBody>
         </Table>
       </div>
-      <ClientsTablePagination table={table} />
+      <TablePagination table={table} />
     </div>
   );
 }

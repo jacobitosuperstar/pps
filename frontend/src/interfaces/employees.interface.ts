@@ -8,7 +8,7 @@ export interface Employee {
   names: string;
   last_names: string;
   role: string;
-  birthday: string | null;
+  birthday: Date | null;
 }
 
 export interface GetEmployeesParams {
@@ -24,7 +24,7 @@ export interface GetEmployeesResponse {
   results: Employee[];
 }
 
-export interface CreateEmployeeDto {
+export interface CreateEmployeeDTO {
   identification: string;
   names: string;
   last_names: string;
@@ -32,7 +32,7 @@ export interface CreateEmployeeDto {
   birthday: string;
 }
 
-export interface UpdateEmployeeDto {
+export interface UpdateEmployeeDTO {
   id: number;
   names: string;
   last_names: string;
@@ -40,41 +40,14 @@ export interface UpdateEmployeeDto {
   birthday: string;
 }
 
-// OOO
-export interface OOOTypesResponse {
-  non_paid_leave: "Vacaciones no pagas";
-  non_paid_permit: "permiso no pago";
-  non_work_accident: "Accidente no relacionado con el trabajo";
-  paid_leave: "Vacaciones pagas";
-  paid_permit: "permiso pago";
-  work_accident: "Accidente de trabajo";
-}
-
-export interface OOOModel {
+export interface EmployeeOption {
   id: number;
-  created_at: string;
-  updated_at: string;
-  is_deleted: boolean;
-  employee: Employee;
-  ooo_type: string;
-  start_date: string;
-  end_date: string;
-  description: string;
-}
-
-export interface CreateOooDto {
-  employee_identification: number;
-  ooo_type: string;
-  start_date: string;
-  end_date: string;
-  description: string;
-}
-
-export interface CreateOooResponse {
-  ooo_time: string;
-}
-
-export interface OOOType {
-  id: keyof OOOTypesResponse;
   label: string;
+}
+
+export interface GetOptionsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: EmployeeOption[];
 }

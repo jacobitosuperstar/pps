@@ -10,8 +10,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { PATHS } from "@/constant/paths";
 import {
-  useCreateEmployeeMutation,
   useGetRolesQuery,
+  useUpdateEmployeeMutation,
 } from "@/store/apis/employees.api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2Icon } from "lucide-react";
@@ -20,13 +20,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { SelectField } from "@/components/select-field";
 import { toast } from "sonner";
+import type { Employee } from "@/interfaces/employees.interface";
+import { format } from "date-fns";
 
 const clientFormSchema = z.object({
-  identification: z
-    .string()
-    .min(6, { message: "La cédula debe tener al menos 6 dígitos" }) // puedes ajustar el mínimo
-    .max(10, { message: "La cédula no debe tener más de 10 dígitos" }) // puedes ajustar el máximo
-    .regex(/^\d+$/, { message: "La cédula solo debe contener números" }),
   names: z.string().min(1, {
     message: "Este campo es requerido",
   }),
@@ -43,17 +40,24 @@ const clientFormSchema = z.object({
 
 type ClientFormType = z.infer<typeof clientFormSchema>;
 
-export const AddEmployeeForm = () => {
+interface Props {
+  employeeId: number;
+  currentValues: Employee;
+}
+
+export const UpdateEmployeeForm = ({ employeeId, currentValues }: Props) => {
   const navigate = useNavigate();
 
   // form
   const form = useForm<ClientFormType>({
     resolver: zodResolver(clientFormSchema),
     defaultValues: {
-      identification: "",
-      names: "",
-      last_names: "",
-      role: "",
+      names: currentValues.names,
+      last_names: currentValues.last_names,
+      role: currentValues.role,
+      birthday: currentValues.birthday
+        ? format(currentValues.birthday, "yyyy-MM-dd")
+        : "",
     },
   });
 
@@ -61,21 +65,22 @@ export const AddEmployeeForm = () => {
   const { data: roles = [] } = useGetRolesQuery();
 
   // mutations
-  const [createEmployeeMutation, { isLoading: isSubmitting }] =
-    useCreateEmployeeMutation();
+  const [updateEmployeeMutation, { isLoading: isSubmitting }] =
+    useUpdateEmployeeMutation();
 
   // methods
   const onSubmit = (data: ClientFormType) => {
-    createEmployeeMutation({
+    updateEmployeeMutation({
+      id: employeeId,
       ...data,
     })
       .unwrap()
       .then(() => {
-        toast.success("Cliente creado exitosamente");
+        toast.success("Cliente actualizado exitosamente");
         navigate(PATHS.EMPLOYEES.INDEX);
       })
       .catch(() => {
-        toast.error("Error al crear el cliente");
+        toast.error("Error al actualizar el cliente");
       });
   };
 
@@ -86,19 +91,6 @@ export const AddEmployeeForm = () => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-6 min-h-screen"
       >
-        <FormField
-          control={form.control}
-          name="identification"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Cédula</FormLabel>
-              <FormControl>
-                <Input placeholder="Ingrese la cédula" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <FormField
           control={form.control}
           name="names"

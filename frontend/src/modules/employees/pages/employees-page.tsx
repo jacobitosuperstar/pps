@@ -1,5 +1,5 @@
 import { useGetEmployeesQuery } from "@/store/apis/employees.api";
-import { EmployeesTable } from "./components/cemployees-table";
+import { DataTable } from "../components/data-table";
 import { useSearchParams } from "react-router-dom";
 
 export default function EmployeesPage() {
@@ -26,7 +26,7 @@ export default function EmployeesPage() {
           Gestiona los empleados de tu empresa.
         </p>
       </div>
-      <EmployeesTable data={employees} isLoading={isLoading} />
+      <DataTable data={employees} isLoading={isLoading} />
     </div>
   );
 }

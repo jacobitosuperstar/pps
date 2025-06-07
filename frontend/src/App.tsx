@@ -3,13 +3,16 @@ import { router } from "./router";
 import { Toaster } from "./components/ui/sonner";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
+import { ConfirmProvider } from "./components/providers/confirm-provider";
 
 function App() {
   return (
     <>
       <Provider store={store}>
-        <RouterProvider router={router} />
-        <Toaster position="top-center" richColors />
+        <ConfirmProvider>
+          <RouterProvider router={router} />
+          <Toaster position="top-center" richColors />
+        </ConfirmProvider>
       </Provider>
     </>
   );

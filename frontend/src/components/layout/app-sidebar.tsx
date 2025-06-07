@@ -46,11 +46,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: "#",
           icon: Settings2,
         },
+        {
+          title: "Permisos",
+          url: PATHS.OOO.INDEX,
+          icon: Settings2,
+        },
       ],
       masterModules: [
         {
           title: "Empleados",
-          url: PATHS.EMPLOYEES,
+          url: PATHS.EMPLOYEES.INDEX,
           icon: Users,
         },
         {

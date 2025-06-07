@@ -5,16 +5,17 @@ import { useDebounceValue } from "usehooks-ts";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PATHS } from "@/constant/paths";
 import { Link } from "react-router-dom";
 
-interface ClientsTableToolbarProps<TData> {
+interface TableToolbarProps<TData> {
   table: Table<TData>;
+  createUrl?: string;
 }
 
-export function ClientsTableToolbar<TData>({
+export function TableToolbar<TData>({
   table,
-}: ClientsTableToolbarProps<TData>) {
+  createUrl,
+}: TableToolbarProps<TData>) {
   const isFiltered =
     table.getState().columnFilters.length > 0 ||
     table.getState().globalFilter !== "";
@@ -51,11 +52,13 @@ export function ClientsTableToolbar<TData>({
         )}
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <Link to={PATHS.EMPLOYEES.CREATE}>
-          <Button variant="outline" size="sm" className="ml-auto h-10">
-            Nuevo <Plus />
-          </Button>
-        </Link>
+        {createUrl && (
+          <Link to={createUrl}>
+            <Button variant="outline" size="sm" className="ml-auto h-10">
+              Nuevo <Plus />
+            </Button>
+          </Link>
+        )}
       </div>
     </div>
   );

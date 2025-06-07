@@ -15,7 +15,7 @@ interface SelectFieldProps {
 
 export const SelectField = ({ value, onChange, options }: SelectFieldProps) => {
   return (
-    <Select onValueChange={onChange} defaultValue={value}>
+    <Select onValueChange={onChange} value={value}>
       <FormControl>
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Seleccione un rol" />

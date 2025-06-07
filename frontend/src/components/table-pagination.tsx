@@ -2,8 +2,8 @@ import type { Table } from "@tanstack/react-table";
 import {
   ChevronLeft,
   ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
+  // ChevronsLeft,
+  // ChevronsRight,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -15,13 +15,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface ClientsTablePaginationProps<TData> {
+interface TablePaginationProps<TData> {
   table: Table<TData>;
 }
 
-export function ClientsTablePagination<TData>({
-  table,
-}: ClientsTablePaginationProps<TData>) {
+export function TablePagination<TData>({ table }: TablePaginationProps<TData>) {
   return (
     <div className="flex items-center justify-between px-2">
       <div className="flex-1 text-sm text-muted-foreground">
@@ -55,7 +53,7 @@ export function ClientsTablePagination<TData>({
           {table.getPageCount()}
         </div>
         <div className="flex items-center space-x-2">
-          <Button
+          {/* <Button
             variant="outline"
             className="hidden h-8 w-8 p-0 lg:flex"
             onClick={() => table.setPageIndex(0)}
@@ -63,7 +61,7 @@ export function ClientsTablePagination<TData>({
           >
             <span className="sr-only">Go to first page</span>
             <ChevronsLeft className="h-4 w-4" />
-          </Button>
+          </Button> */}
           <Button
             variant="outline"
             className="h-8 w-8 p-0"
@@ -82,7 +80,7 @@ export function ClientsTablePagination<TData>({
             <span className="sr-only">Go to next page</span>
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <Button
+          {/* <Button
             variant="outline"
             className="hidden h-8 w-8 p-0 lg:flex"
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
@@ -90,7 +88,7 @@ export function ClientsTablePagination<TData>({
           >
             <span className="sr-only">Go to last page</span>
             <ChevronsRight className="h-4 w-4" />
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>
