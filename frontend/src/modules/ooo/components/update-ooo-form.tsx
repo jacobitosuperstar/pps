@@ -35,11 +35,9 @@ const oooFormSchema = z.object({
   end_date: z.string().min(1, {
     message: "Este campo es requerido",
   }),
-  description: z
-    .string()
-    .max(255, {
-      message: "Este campo debe tener menos de 255 caracteres",
-    }),
+  description: z.string().max(255, {
+    message: "Este campo debe tener menos de 255 caracteres",
+  }),
 });
 
 type OooFormType = z.infer<typeof oooFormSchema>;
@@ -95,7 +93,7 @@ export const UpdateOooForm = ({ oooId, currentValues }: Props) => {
 
   useEffect(() => {
     if (currentValues) {
-      getEmployeeById(currentValues.employee)
+      getEmployeeById(currentValues.employee.id)
         .unwrap()
         .then((res) => {
           setEmployee(`${res.names} ${res.last_names} - ${res.identification}`);

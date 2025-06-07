@@ -1,8 +1,10 @@
+import type { Employee } from "./employees.interface";
+
 export type OOOTypesResponse = { label: string; value: string }[];
 
 export interface OOO {
   id: number;
-  employee: number;
+  employee: Employee;
   ooo_type: string;
   start_date: string;
   end_date: string;

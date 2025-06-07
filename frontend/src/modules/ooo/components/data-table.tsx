@@ -56,7 +56,11 @@ export function DataTable({ data, isLoading }: Props) {
     {
       accessorKey: "employee",
       header: "Empleado",
-      cell: ({ row }) => <div>{row.getValue("employee")}</div>,
+      cell: ({ row }) => (
+        <div>
+          {row.original.employee.names + " " + row.original.employee.last_names}
+        </div>
+      ),
     },
     {
       accessorKey: "ooo_type",
