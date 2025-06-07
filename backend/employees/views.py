@@ -8,6 +8,7 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth import authenticate
 from django.forms import ValidationError
 
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
@@ -20,9 +21,7 @@ from base.response import ORJsonResponse as JsonResponse
 from base.http_status_codes import HTTP_STATUS
 from base.logger import base_logger
 from base.generic_views import (
-    BaseListView,
     BaseFileteredListView,
-    BaseCreateView,
     BaseDetailView,
     BaseUpdateView,
     BaseDeleteView,
@@ -37,15 +36,13 @@ from .mixins import (
 
 from .models import (
     Employee,
-    OOOTypes_list,
     RoleChoices,
     OOO,
+    OOOTypes_list,
     Role_list
 )
 from .forms import (
-    EmployeeCreationForm,
     EmployeeForm,
-    OOOCreationForm,
     OOOForm,
 )
 
@@ -54,29 +51,21 @@ from .serializers import (
     CreateEmployeeSerializer,
     EmployeeAuthenticationSerializer,
     EmployeeLoginResponseSerializer,
+    EmployeeOptionSerializer,
     EmployeeSerializer,
     ErrorResponseSerializer,
     OOOTypesResponseSerializer,
     RoleChoicesResponseSerializer,
     UpdateEmployeeSerializer,
+    OOOSerializer,
+    CreateOOOSerializer,
+    UpdateOOOSerializer
 )
 
-
-
-class EmployeeRolesView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(
-        description="List of work roles for the different kind of employees.",
-        responses={
-            status.HTTP_200_OK: RoleChoicesResponseSerializer(many=True),
-        }
-    )
-    def get(self, request):
-        return Response(Role_list, status=status.HTTP_200_OK)
-
-
+############################
+###### Rest Framework ######
+############################
+@extend_schema(tags=["Authentication"])
 class EmployeeLoginView(APIView):
     serializer_class = EmployeeAuthenticationSerializer
 
@@ -123,9 +112,11 @@ class EmployeeLoginView(APIView):
         }
         return Response(msg, status=status.HTTP_200_OK)
     
+@extend_schema(tags=["Employees"])
 class EmployeeViewSet(viewsets.ViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated, IsEmployeeRole(['admin', 'hr'])]
+    serializer_class = EmployeeSerializer
     renderer_classes = [JSONRenderer]
     
     @extend_schema(
@@ -138,7 +129,7 @@ class EmployeeViewSet(viewsets.ViewSet):
         filter_serializer.is_valid(raise_exception=True)
         filters = filter_serializer.validated_data
         
-        queryset = Employee.objects.all()
+        queryset = Employee.objects.filter(is_active=True)
 
         # Filtro de búsqueda por nombre, apellido o identificación
         search = filters.get('search')
@@ -157,6 +148,32 @@ class EmployeeViewSet(viewsets.ViewSet):
 
         serializer = EmployeeSerializer(paginated_qs, many=True)
         return paginator.get_paginated_response(serializer.data)
+    
+    @extend_schema(
+        parameters=[CommonFilterSerializer],
+        responses=EmployeeOptionSerializer,
+        description="Options endpoint for autocomplete dropdowns with infinite scroll.",
+    )
+    @action(detail=False, methods=['get'], url_path='options')
+    def options(self, request):
+        search = request.query_params.get("search", "")
+        queryset = Employee.objects.filter(is_active=True)
+
+        if search:
+            queryset = queryset.filter(
+                Q(identification__icontains=search) |
+                Q(names__icontains=search) |
+                Q(last_names__icontains=search)
+            )
+
+        paginator = PageNumberPagination()
+        paginator.page_size = request.query_params.get('page_size', 10)
+        paginated_qs = paginator.paginate_queryset(queryset, request)
+
+        serializer = EmployeeOptionSerializer(paginated_qs, many=True)
+        return paginator.get_paginated_response(serializer.data)
+    
+    
 
     @extend_schema(
         responses=EmployeeSerializer,
@@ -165,10 +182,21 @@ class EmployeeViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         try:
             employee = Employee.objects.get(pk=pk)
-        except Employee.DoesNotExist: # pylint: disable=no-member
+        except Employee.DoesNotExist:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         serializer = EmployeeSerializer(employee)
         return Response(serializer.data)
+
+
+    @action(detail=False, methods=["get"], url_path="roles")
+    @extend_schema(
+        description="List of work roles for the different kind of employees.",
+        responses={
+            status.HTTP_200_OK: RoleChoicesResponseSerializer(many=True),
+        }
+    )
+    def get_roles(self, request):
+        return Response(Role_list, status=status.HTTP_200_OK)
 
     @extend_schema(
         request=CreateEmployeeSerializer,
@@ -181,7 +209,7 @@ class EmployeeViewSet(viewsets.ViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+   
     @extend_schema(
         request=UpdateEmployeeSerializer,
         responses=EmployeeSerializer,
@@ -190,7 +218,7 @@ class EmployeeViewSet(viewsets.ViewSet):
     def update(self, request, pk=None):
         try:
             employee = Employee.objects.get(pk=pk)
-        except Employee.DoesNotExist: # pylint: disable=no-member
+        except Employee.DoesNotExist:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = UpdateEmployeeSerializer(employee, data=request.data)
@@ -199,47 +227,117 @@ class EmployeeViewSet(viewsets.ViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-class EmployessView(
-    RoleValidatorMixin,
-    BaseListView
-):
-    """Class View to get all of the employees and for
-    the creation of the employees.
-    """
-    allowed_roles = [
-        RoleChoices.HR,
-        RoleChoices.MANAGEMENT,
-    ]
-    model = Employee
-    form: type[EmployeeCreationForm] = EmployeeCreationForm
-    # serializer_depth: int = 0
-
-    method_decorator(decorator=role_validation(allowed_roles=[RoleChoices.HR]))
-    def post(self, request: HttpRequest, *args, **kwargs) -> JsonResponse:
-        """CREATES the employee."""
-        form = self.validate_form(request=request)
-
-        password = None
-        if form.get("role") not in (RoleChoices.PRODUCTION, ""):
-            password = secrets.token_urlsafe(8)
-
+    @action(detail=True, methods=["post"], url_path="deactivate")
+    @extend_schema(
+        responses=EmployeeSerializer,
+        description="Deactivate an employee (mark as is_deleted=True)."
+    )
+    def deactivate(self, request, pk=None):
         try:
-            user: Employee = Employee.objects.create_user(**form)
-            msg = {
-                "identification": user.identification,
-                "role": user.role,
-            }
-            if password:
-                msg["generated_password"] = password
-            return JsonResponse(msg, status=HTTP_STATUS.created)
-        except Exception as e:
-            msg = {
-                "response": _("Internal server error.")
-            }
-            base_logger.critical(e)
-            return JsonResponse(msg, status=HTTP_STATUS.internal_server_error)
+            employee = Employee.objects.get(pk=pk)
+        except Employee.DoesNotExist:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
+        if not employee.is_active:
+            return Response({"detail": "Employee is already deactivated."}, status=status.HTTP_400_BAD_REQUEST)
+
+        employee.is_active = False
+        employee.save()
+
+        serializer = EmployeeSerializer(employee)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@extend_schema(tags=["OOO"])
+class OOOViewSet(viewsets.ViewSet):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsEmployeeRole(['admin', 'hr'])]
+    serializer_class = OOOSerializer
+    renderer_classes = [JSONRenderer]
+
+    @extend_schema(
+        parameters=[CommonFilterSerializer],
+        responses=OOOSerializer,
+        description="List all OOO (Out Of Office) records with optional filters.",
+    )
+    def list(self, request):
+        filter_serializer = CommonFilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+        filters = filter_serializer.validated_data
+
+        queryset = OOO.objects.all()
+
+        # Filtro de búsqueda por nombre del empleado o tipo de OOO
+        search = filters.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(employee__names__icontains=search) |
+                Q(employee__last_names__icontains=search) |
+                Q(ooo_type__icontains=search)
+            )
+
+        # Paginación
+        paginator = PageNumberPagination()
+        paginator.page_size = filters.get('page_size', 10)
+        paginated_qs = paginator.paginate_queryset(queryset, request)
+
+        serializer = OOOSerializer(paginated_qs, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+    @extend_schema(
+        responses=OOOSerializer,
+        description="Retrieve a single OOO record by ID.",
+    )
+    def retrieve(self, request, pk=None):
+        try:
+            ooo = OOO.objects.get(pk=pk)
+        except OOO.DoesNotExist:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = OOOSerializer(ooo)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"], url_path="types")
+    @extend_schema(
+        description="List of out-of-office types for employees.",
+        responses={status.HTTP_200_OK: OOOTypesResponseSerializer},
+    )
+    def get_types(self, request):
+        return Response(OOOTypes_list, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        request=CreateOOOSerializer,
+        responses=OOOSerializer,
+        description="Create a new OOO (Out Of Office) record.",
+    )
+    def create(self, request):
+        serializer = CreateOOOSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        request=UpdateOOOSerializer,
+        responses=OOOSerializer,
+        description="Update an existing OOO record by ID.",
+    )
+    def update(self, request, pk=None):
+        try:
+            ooo = OOO.objects.get(pk=pk)
+        except OOO.DoesNotExist:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UpdateOOOSerializer(ooo, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+############################
+###### Django Generic ######
+############################
 
 class EmployessFilteredView(
     RoleValidatorMixin,
@@ -322,43 +420,6 @@ class EmployeeDUDView(
             }
             base_logger.critical(e)
             return JsonResponse(error_data, status=HTTP_STATUS.internal_server_error)
-
-
-class EmployeeOOOTypesView(APIView):
-
-    @extend_schema(
-        description="List of out-of-office types for employees.",
-        responses={status.HTTP_200_OK: OOOTypesResponseSerializer},
-    )
-    def get(self, request):
-        return Response({"types": OOOTypes_list}, status=status.HTTP_200_OK)
-
-
-class OOOsView(
-    RoleValidatorMixin,
-    BaseListView,
-    BaseCreateView,
-):
-    allowed_roles = [
-        RoleChoices.HR,
-        RoleChoices.PRODUCTION_MANAGER,
-        RoleChoices.MANAGEMENT,
-    ]
-    model = OOO
-    form: type[OOOCreationForm] = OOOCreationForm
-    prefetch_fields = []
-    select_fields = ["employee"]
-    serializer_depth: int = 1
-
-    @method_decorator(decorator=role_validation(allowed_roles=[RoleChoices.HR]))
-    def post(self, request: HttpRequest, *args, **kwargs):
-        """This method is re defined because there are different permissions to
-        different methods within the endpoint. The main idea would be to
-        assign the roles that can use this http method.
-
-        Creation of the OOO.
-        """
-        return super().post(request, *args, **kwargs)
 
 
 class OOOsFilteredListView(

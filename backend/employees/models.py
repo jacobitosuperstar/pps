@@ -200,7 +200,7 @@ class OOOTypes(models.TextChoices):
 
 OOOTypes_dict = {value: label for value, label in OOOTypes.choices}
 
-OOOTypes_list = [value for value, label in OOOTypes.choices]
+OOOTypes_list = [{"value": value, "label": label.capitalize()} for value, label in OOOTypes.choices]
 
 
 class OOO(BaseModel):

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from employees.models import Employee, RoleChoices
+from employees.models import Employee, RoleChoices, OOOTypes, OOO
 
 # Commons
 class CommonFilterSerializer(serializers.Serializer):
@@ -25,7 +25,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
 class CreateEmployeeSerializer(serializers.ModelSerializer):
     identification = serializers.CharField(
-        max_length=50,
+        max_length=20,
         required=True,
     )
     names = serializers.CharField(
@@ -69,6 +69,16 @@ class UpdateEmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
         fields = ["names", "last_names", "role", "birthday"]
+
+class EmployeeOptionSerializer(serializers.ModelSerializer):
+    label = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Employee
+        fields = ['id', 'label']
+
+    def get_label(self, obj):
+        return f"{obj.names} {obj.last_names} - {obj.identification}"
         
 # Login serializer for employees
 class EmployeeAuthenticationSerializer(serializers.Serializer):
@@ -90,13 +100,59 @@ class RoleChoicesResponseSerializer(serializers.Serializer):
 # OOO types serializer
 class OOOTypesResponseSerializer(serializers.Serializer):
     """Serializer that returns a key-value dictionary of OOO types."""
-    types = serializers.ListField(
-        child=serializers.CharField(),
-        help_text="Dictionary of OOO types with their human-readable labels."
+    label = serializers.CharField()
+    value = serializers.ChoiceField(
+        choices=OOOTypes.choices,
     )
 
-class EmployeeResponseSerializer(serializers.Serializer):
-    """Serializer for employee creation response."""
-    identification = serializers.CharField()
-    role = serializers.ChoiceField(choices=RoleChoices.choices)
-    generated_password = serializers.CharField(required=False)
+# OOO serializers
+class OOOSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OOO
+        fields = ["id","employee", "ooo_type", "start_date", "end_date", "description"]
+
+
+class CreateOOOSerializer(serializers.ModelSerializer):
+    employee = serializers.PrimaryKeyRelatedField(
+        queryset=Employee.objects.all(),
+        required=True,
+    )
+    ooo_type = serializers.ChoiceField(
+        choices=OOOTypes.choices,
+        required=True,
+    )
+    start_date = serializers.DateField(
+        required=True,
+    )
+    end_date = serializers.DateField(
+        required=True,
+    )
+    description = serializers.CharField(
+        max_length=255,
+        required=False,
+        allow_blank=True,
+    )
+    class Meta:
+        model = OOO
+        fields = ["employee", "ooo_type", "start_date", "end_date", "description"]
+
+
+class UpdateOOOSerializer(serializers.ModelSerializer):
+    ooo_type = serializers.ChoiceField(
+        choices=OOOTypes.choices,
+        required=True,
+    )
+    start_date = serializers.DateField(
+        required=True,
+    )
+    end_date = serializers.DateField(
+        required=True,
+    )
+    description = serializers.CharField(
+        max_length=255,
+        required=False,
+        allow_blank=True,
+    )
+    class Meta:
+        model = OOO
+        fields = ["ooo_type", "start_date", "end_date", "description"]

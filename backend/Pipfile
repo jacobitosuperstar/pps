@@ -16,6 +16,8 @@ drf-spectacular = "*"
 [dev-packages]
 ruff = "*"
 python-lsp-server = "*"
+pylint = "*"
+pylint-django = "*"
 
 [requires]
 python_version = "*"
