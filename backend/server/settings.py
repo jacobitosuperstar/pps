@@ -42,9 +42,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # MyApps
     "base.apps.BaseConfig",
+    "clients.apps.ClientsConfig",
     "employees.apps.EmployeesConfig",
     "machines.apps.MachinesConfig",
+    "production.apps.ProductionConfig",
     "products.apps.ProductsConfig",
+    "shift.apps.ShiftConfig",
     # Third Party Apps
     "corsheaders",
 ]

@@ -7,6 +7,7 @@ from typing import (
     Optional,
     Any,
 )
+import json
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext as _
 from django.http import HttpRequest
@@ -70,7 +71,17 @@ class BaseMixin:
         if request.method == "GET":
             request_values: Dict = request.GET
         elif request.method == "POST":
-            request_values: Dict = request.POST
+            if request.content_type == "application/json":
+                try:
+                    request_values = json.loads(request.body)
+                except json.JSONDecodeError:
+                    msg = {
+                        "response": _("Invalid JSON in request body."),
+                        "errors": _("The request body couldn't be parsed as JSON.")
+                    }
+                    raise ValidationError(msg)
+            else:
+                request_values: Dict = request.POST
 
         form: Union[ModelForm, Form] = self.form(request_values)
 

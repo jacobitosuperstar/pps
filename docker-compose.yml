@@ -5,14 +5,15 @@ services:
   # Banckend
   backend:
     build:
-      context: .
-      dockerfile: ./backend/Dockerfile
+      context: ./backend
+      dockerfile: ./Dockerfile
     expose:
       - "8000"
     ports:
       - "8000:8000"
-    # volumes:
-    #   - ./backend/:/app/
+    volumes:
+      - /app/.venv/
+      - ./backend/:/app/
     env_file:
       - ./pps.env
     environment:
@@ -20,9 +21,9 @@ services:
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-}
     command: >
       sh -c "
-      ./.venv/bin/python manage.py makemigrations &&
-      ./.venv/bin/python manage.py migrate &&
-      ./.venv/bin/python manage.py runserver 0.0.0.0:8000
+      pipenv run python manage.py makemigrations &&
+      pipenv run python manage.py migrate &&
+      pipenv run python manage.py runserver 0.0.0.0:8000
       "
     # gunicorn -c gunicorn_config.py server.wsgi:application --timeout 10800
     networks:
