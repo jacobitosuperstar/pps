@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     "shift.apps.ShiftConfig",
     # Third Party Apps
     "corsheaders",
+    "rest_framework",
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -136,6 +138,21 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# DRF
+
+REST_FRAMEWORK = {
+    # YOUR SETTINGS
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# SPECTACULAR SWAGGER DOCUMENTATION
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "PPS",
+    "DESCRIPTION": "Production & Planning Software",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/

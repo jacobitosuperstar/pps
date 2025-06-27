@@ -4,6 +4,7 @@ from typing import (
 )
 from typing_extensions import NamedTuple
 import json
+from rest_framework import serializers
 from django import forms
 from django.utils.translation import gettext as _
 
@@ -21,24 +22,31 @@ from .models import (
 
 
 
-class OrderItem(NamedTuple):
-    product: Product
-    amount: int
+class SaleOrderItemSerializer(serializers.Serializer):
+    product = serializers.IntegerField(required=True)
+    product_ammount = serializers.IntegerField(required=True)
+
+    def validate_product(self, value) -> Product:
+        """Checks that the products exists
+        """
+        if not Product.objects.filter(id=value).exists():
+            raise serializers.ValidationError("The related product doesn't exists")
+        ...
 
 
-class SaleOrderCreationForm(forms.Form):
+class SaleOrderCreationForm(serializers.Serializer):
     """Form to validate the information regarding the creation of the Product.
     """
     # SaleOrder
-    client = forms.IntegerField(
+    client = serializers.IntegerField(
         required=True,
     )
-    notes = forms.CharField(
+    notes = serializers.CharField(
         required=False,
     )
 
     # SaleOrderItem
-    items = forms.JSONField(
+    items = serializers.JSONField(
         required=True,
     )
 

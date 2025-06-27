@@ -43,6 +43,7 @@ class ClientCreationForm(forms.Form):
             "client_phone_number",
         ]
 
+
 class ClientUpdateForm(forms.Form):
     """Form to validate the information regarding the creation of the Product.
     """
@@ -69,6 +70,7 @@ class ClientUpdateForm(forms.Form):
         if Client.objects.filter(client_id=client_id).exists() and client_id:
             raise forms.ValidationError(_("There is already a client with that ID."))
         return client_id
+
 
 class ClientForm(forms.Form):
     """Form to validate the information regarding the creation of the Product.

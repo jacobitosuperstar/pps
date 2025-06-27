@@ -27,7 +27,6 @@ class Client(BaseModel):
     """
 
     client_id = models.CharField(
-        # index=True,
         null=False,
         blank=False,
         unique=True,
