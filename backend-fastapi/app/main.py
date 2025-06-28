@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.api_v1.api import api_router
 from app.core.config import settings
 
 app = FastAPI(
@@ -18,4 +17,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(api_router, prefix="/api/v1")
+# Incluir rutas de cada módulo
+from app.employees import employees_router
+from app.machines import machines_router
+from app.products import products_router
+from app.production import production_router
+
+app.include_router(employees_router, prefix="/api/v1")
+app.include_router(machines_router, prefix="/api/v1")
+app.include_router(products_router, prefix="/api/v1")
+app.include_router(production_router, prefix="/api/v1")

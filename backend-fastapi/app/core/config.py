@@ -7,11 +7,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "your-secret-key-here"
     
     # Database
-    POSTGRES_SERVER: str = "localhost"
-    POSTGRES_USER: str = "postgres"
-    POSTGRES_PASSWORD: str = "postgres"
-    POSTGRES_DB: str = "pps_db"
-    SQLALCHEMY_DATABASE_URI: str = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}/{POSTGRES_DB}"
+    DATABASE_URL: str = "sqlite:///./pps.db"
     
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000"]
