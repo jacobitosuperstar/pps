@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Integer, ForeignKey, Date, Text
 from sqlalchemy.orm import relationship
 from app.db.base import Base
+from app.clients.models import Client
 
 class SaleOrder(Base):
     __tablename__ = "sale_orders"

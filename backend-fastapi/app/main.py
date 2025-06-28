@@ -11,7 +11,7 @@ app = FastAPI(
 # Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -22,8 +22,13 @@ from app.employees import employees_router
 from app.machines import machines_router
 from app.products import products_router
 from app.production import production_router
+from app.auth import auth_router
 
-app.include_router(employees_router, prefix="/api/v1")
-app.include_router(machines_router, prefix="/api/v1")
-app.include_router(products_router, prefix="/api/v1")
-app.include_router(production_router, prefix="/api/v1")
+# Incluir rutas de autenticación
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
+
+# Incluir rutas de la API
+app.include_router(employees_router, prefix="/api/v1", tags=["employees"])
+app.include_router(machines_router, prefix="/api/v1", tags=["machines"])
+app.include_router(products_router, prefix="/api/v1", tags=["products"])
+app.include_router(production_router, prefix="/api/v1", tags=["production"])

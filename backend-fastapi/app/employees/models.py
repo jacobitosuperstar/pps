@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Date, Boolean, ForeignKey, Integer
+from sqlalchemy import Column, String, Date, Boolean, ForeignKey, Integer, Table
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 
@@ -19,6 +19,14 @@ class RoleChoices:
         (ACCOUNTING, "Accounting")
     ]
 
+# Tabla de asociación para la relación many-to-many entre Employee y MachineType
+employee_machines = Table(
+    'employee_machines',
+    Base.metadata,
+    Column('employee_id', String(50), ForeignKey('employees.identification')),
+    Column('machine_type_id', Integer, ForeignKey('machine_types.id'))
+)
+
 class Employee(Base):
     __tablename__ = "employees"
 
@@ -32,8 +40,9 @@ class Employee(Base):
     is_active = Column(Boolean, default=True)
     is_staff = Column(Boolean, default=False)
     is_superuser = Column(Boolean, default=False)
+    password = Column(String(255), nullable=False)
 
-    trained_machines = relationship("MachineType", secondary="employee_machines")
+    trained_machines = relationship("MachineType", secondary=employee_machines)
 
 class OOO(Base):
     __tablename__ = "ooos"

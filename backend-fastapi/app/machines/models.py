@@ -17,6 +17,7 @@ class MachineType(Base):
     id = Column(Integer, primary_key=True, index=True)
     machine_type = Column(String(100), nullable=False, unique=True)
 
+    # Relación many-to-many con Employee a través de la tabla de asociación
     trained_employees = relationship("Employee", secondary="employee_machines")
 
 class Machine(Base):

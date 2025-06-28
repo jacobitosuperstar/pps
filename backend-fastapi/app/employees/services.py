@@ -1,9 +1,12 @@
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from app.employees.models import Employee, OOO
 from app.employees.schemas import EmployeeCreate, EmployeeUpdate, OOOCreation
+from app.core.security import get_password_hash
+from fastapi import HTTPException
+from fastapi import status
 
-def get_employee(db: Session, employee_id: str) -> Employee:
+def get_employee(db: Session, employee_id: str) -> Optional[Employee]:
     """Retrieve an employee by ID."""
     return db.query(Employee).filter(Employee.identification == employee_id).first()
 
@@ -12,8 +15,43 @@ def get_employees(db: Session) -> List[Employee]:
     return db.query(Employee).all()
 
 def create_employee(db: Session, employee_in: EmployeeCreate) -> Employee:
-    """Create a new employee."""
-    db_employee = Employee(**employee_in.model_dump())
+    """Create a new employee.
+    
+    Args:
+        db: Database session
+        employee_in: Employee data
+        
+    Returns:
+        Employee: The created employee
+        
+    Raises:
+        HTTPException: If employee with the same ID already exists
+    """
+    from datetime import date
+    
+    # Verificar si el empleado ya existe
+    db_employee = get_employee(db, employee_in.identification)
+    if db_employee:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Employee with ID {employee_in.identification} already exists"
+        )
+    
+    # Obtener los datos del empleado y encriptar la contraseña
+    employee_data = employee_in.model_dump()
+    if 'password' in employee_data and employee_data['password']:
+        employee_data['password'] = get_password_hash(employee_data['password'])
+    
+    # Establecer valores por defecto para los campos requeridos
+    employee_data.update({
+        'date_joined': date.today(),
+        'last_login': date.today(),
+        'is_active': True,
+        'is_staff': False,
+        'is_superuser': False
+    })
+    
+    db_employee = Employee(**employee_data)
     db.add(db_employee)
     db.commit()
     db.refresh(db_employee)
