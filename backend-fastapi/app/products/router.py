@@ -10,6 +10,7 @@ from app.products.services import (
     update_product,
     delete_product
 )
+from typing import List
 
 router = APIRouter()
 

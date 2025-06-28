@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, JSON
+from sqlalchemy import Column, String, JSON, Integer
 from app.db.base import Base
 
 class Product(Base):

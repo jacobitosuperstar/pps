@@ -11,6 +11,7 @@ from app.employees.services import (
     delete_employee,
     create_ooo
 )
+from typing import List
 
 router = APIRouter()
 

@@ -16,6 +16,7 @@ from app.production.services import (
     create_production_order,
     create_quality_evaluation
 )
+from typing import List
 
 router = APIRouter()
 

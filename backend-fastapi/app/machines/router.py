@@ -13,6 +13,7 @@ from app.machines.services import (
     update_machine,
     delete_machine
 )
+from typing import List
 
 router = APIRouter()
 
