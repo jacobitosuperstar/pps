@@ -1,4 +1,4 @@
-.PHONY: test development production shell create_module __phony_dummy__
+.PHONY: test dev prod shell create_module __phony_dummy__
 
 # Extract the module name from the command-line goals
 # `firstword` gets the first target (create_module)
@@ -25,6 +25,7 @@ else
 	@touch $(MODULE_NAME)/models.py
 	@touch $(MODULE_NAME)/views.py
 	@touch $(MODULE_NAME)/test_$(MODULE_NAME).py
+	@mkdir -p $(MODULE_NAME)/tests
 endif
 
 test:
@@ -34,10 +35,10 @@ else
 	@pipenv run pytest $(MODULE_NAME)
 endif
 
-development:
-	@pipenv run fastapi dev main.py
+dev:
+	@pipenv run fastapi dev main.py --host 0.0.0.0 --port 8000
 
-production:
+prod:
 	@pipenv run fastapi run main.py
 
 shell:

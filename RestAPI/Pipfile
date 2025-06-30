@@ -8,6 +8,8 @@ fastapi = {extras = ["standard"], version = "*"}
 pydantic = "*"
 orjson = "*"
 uvicorn = {extras = ["standard"], version = "*"}
+pydantic-settings = "*"
+sqlalchemy = "*"
 
 [dev-packages]
 pytest = "*"

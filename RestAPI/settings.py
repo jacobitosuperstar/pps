@@ -1,0 +1,34 @@
+from typing import List
+from typing import Optional
+from pydantic_settings import BaseSettings
+from base.logger import ConsoleLogger
+
+
+class Settings(BaseSettings):
+    project_name: str = "PPS BACKEND"
+    debug: bool = True
+    acces_token_experation: int = 60 * 24 * 7 # => The finel number(7) is days
+    log_file: Optional[str] = None
+    pythonpath: str = "."
+
+
+    # Database and Security
+    database_url: str = "sqlite:///./db.sqlite3"
+    algorithm: str = "HS256"
+    secret_key: str = "encryption_token_123"
+
+    # Cors
+    backend_cors_origins: List[str] = ["*"]
+
+    class Config:
+        env_file: str = ".env"
+        case_sensitive: bool = False
+
+
+settings: Settings = Settings()
+
+debug_level: str = "DEBUG" if settings.debug else "ERROR"
+logger: ConsoleLogger = ConsoleLogger(
+    filename=settings.log_file,
+    level=debug_level,
+)
