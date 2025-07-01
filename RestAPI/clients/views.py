@@ -51,7 +51,11 @@ def get_clients(
     return PaginatedClients(results=results, total_count=total_count)
 
 
-@router.post("/", response_model=ClientRead)
+@router.post(
+    "/",
+    response_model=ClientRead,
+    status_code=status.HTTP_201_CREATED
+)
 def create_client(
     payload: Client,
     session: Session = Depends(get_session),

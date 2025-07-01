@@ -12,6 +12,7 @@ from settings import settings
 
 SECRET_KEY = settings.secret_key
 EXPIRATION = settings.acces_token_experation
+ALGORITHM = settings.algorithm
 
 
 def create_token(**kwargs):
@@ -34,7 +35,7 @@ def decode_token(token: str) -> Dict[str, Any]:
     """Decodes a JWT token and returns its payload.
     """
     try:
-        payload = jwt.decode(jwt=token, key=SECRET_KEY, algorithms=["HS256"])
+        payload = jwt.decode(jwt=token, key=SECRET_KEY, algorithms=[ALGORITHM])
         return payload
     except InvalidSignatureError:
         raise InvalidSignatureError("Invalid Signature.")
