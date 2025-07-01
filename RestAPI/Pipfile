@@ -10,6 +10,8 @@ orjson = "*"
 uvicorn = {extras = ["standard"], version = "*"}
 pydantic-settings = "*"
 sqlalchemy = "*"
+alembic = "*"
+pyjwt = "*"
 
 [dev-packages]
 pytest = "*"

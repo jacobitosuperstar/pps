@@ -1,7 +1,7 @@
 from typing import List, Optional
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from database import get_session
 from .models import (
@@ -9,7 +9,9 @@ from .models import (
     Client,
     ClientRead,
     ClientUpdate,
+    PaginatedClients,
 )
+from base.db_base_services import filter_instances
 
 
 router: APIRouter = APIRouter(
@@ -18,18 +20,35 @@ router: APIRouter = APIRouter(
 )
 
 
-
-@router.get(path="/", response_model=List[ClientRead])
+@router.get(path="/", response_model=PaginatedClients)
 def get_clients(
+    client_id: Optional[str] = None,
+    client_name: Optional[str] = None,
+    client_email: Optional[str] = None,
+    client_phone_code: Optional[str] = None,
+    client_phone_number: Optional[str] = None,
+    client_deleted: bool = False,
+    limit: int = Query(100, ge=1, le=1000),
+    offset: int = Query(0, ge=0),
     session: Session = Depends(get_session),
-) -> List[DBClient]:
+):
     """
-    Retrieve all active clients (not soft-deleted).
-    - Query the database filtering where `deleted == False`.
-    - Return a list of Pydantic ClientRead models.
+    Retrieve clients (optionally including deleted ones), with optional filtering by fields and pagination.
+    Use the client_deleted query parameter to include deleted clients if needed.
     """
-    clients: List[DBClient] = session.query(DBClient).filter_by(deleted=False).all()
-    return clients
+    filters = {
+        "deleted": client_deleted,
+        "client_id": client_id,
+        "client_name": client_name,
+        "client_email": client_email,
+        "client_phone_code": client_phone_code,
+        "client_phone_number": client_phone_number,
+    }
+    filters = {k: v for k, v in filters.items() if v is not None}
+    clients, total_count = filter_instances(DBClient, session, filters, limit=limit, offset=offset)
+    # Use Pydantic model for serialization
+    results = [ClientRead.model_validate(c) for c in clients]
+    return PaginatedClients(results=results, total_count=total_count)
 
 
 @router.post("/", response_model=ClientRead)

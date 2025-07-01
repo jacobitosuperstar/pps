@@ -1,6 +1,7 @@
-from typing import Type, TypeVar
+from typing import Type, TypeVar, List, Generic
 from typing_extensions import TypedDict
 from datetime import datetime, UTC
+from pydantic import BaseModel
 
 from sqlalchemy.orm import Session
 from sqlalchemy import (
@@ -13,10 +14,23 @@ from database import DeclarativeBase
 
 
 T = TypeVar("T", bound="Base")
+PydanticT = TypeVar("PydanticT", bound=BaseModel)
 
 
 class TestResponse(TypedDict):
     now: datetime
+
+
+class PaginatedElements(BaseModel, Generic[PydanticT]):
+    """
+    Generic paginated response model that can work with any Pydantic model.
+    
+    Args:
+        results: List of items of type PydanticT
+        total_count: Total number of items (before pagination)
+    """
+    results: List[PydanticT]
+    total_count: int
 
 
 class Base(DeclarativeBase):

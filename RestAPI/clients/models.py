@@ -1,11 +1,11 @@
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 from sqlalchemy import Column, String
-from pydantic import BaseModel, EmailStr, Field
+from sqlalchemy.orm import relationship
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
-
-from base.models import Base
+from base.models import Base, PaginatedElements
 
 
 
@@ -48,6 +48,9 @@ class DBClient(Base):
         String(20),
         nullable=False,
     )
+
+    # Relationships
+    sale_orders = relationship("DBSaleOrder", back_populates="client")
 
 
 
@@ -92,5 +95,8 @@ class ClientRead(Client):
     updated_at: datetime
     deleted: bool
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+# Type alias for paginated clients
+PaginatedClients = PaginatedElements[ClientRead]
