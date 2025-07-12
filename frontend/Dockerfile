@@ -1,26 +1,9 @@
-# Usa una imagen base de Node.js
-FROM node:20
+FROM node:20 AS build
 
-# Establece el directorio de trabajo en el contenedor
-WORKDIR /frontend
+WORKDIR /app
 
-# Copia los archivos de la aplicación al directorio de trabajo
-COPY ./frontend/package.json .
+COPY . .
 
-# Instala las dependencias
 RUN npm install
 
-# Construye la aplicación
-COPY ./frontend .
-
-# Desarrollo
-EXPOSE 8080
-
-CMD [ "npm", "run", "dev" ]
-
-# Produccion
-# RUN npm run build
-
-# EXPOSE 8080
-
-# CMD [ "npm", "run", "preview" ]
+RUN npm run build

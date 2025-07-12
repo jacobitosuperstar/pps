@@ -1,10 +1,8 @@
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { RootState } from "../store";
-// import Cookies from "js-cookie";
+import { type RootState } from "../store";
 
 export const appBaseQuery = fetchBaseQuery({
-  baseUrl: "http://localhost:8000/",
-  // credentials: "include",
+  baseUrl: "http://localhost:8000/api/",
   prepareHeaders: (headers, context) => {
     const state = context.getState() as RootState;
     const token = state.auth.token;

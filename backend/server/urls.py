@@ -15,16 +15,28 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 # from django.contrib import admin
-from django.urls import path, include
-from django.conf import settings
-from django.conf.urls.static import static
+from django.urls import path, include, re_path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from .web_app import ReactAppView   
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
-    path("", include("base.urls")),
-    path("employees/", include("employees.urls")),
-    path("machines/", include("machines.urls")),
-    path("products/", include("products.urls")),
+    path("api/machines/", include("machines.urls")),
+    path("api/products/", include("products.urls")),
+
+
+
+     # Documentación Swagger/OpenAPI
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+
+
+    path("api/", include("employees.urls")),
+    path("api/", include("base.urls")),
+
+
+    # this path must be the last one due to serve react app
+    # re_path(r'^.*$', ReactAppView.as_view(), name='react-app'),
 ]
 
 # urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

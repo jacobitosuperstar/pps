@@ -32,6 +32,8 @@ class RoleChoices(models.TextChoices):
 
 RoleChoices_dict = {value: label for value, label in RoleChoices.choices}
 
+Role_list = [{"label": label.capitalize(), "value": value} for value, label in RoleChoices.choices]
+
 
 class EmployessManager(BaseUserManager):
     """Custom user manager for the application.
@@ -197,6 +199,8 @@ class OOOTypes(models.TextChoices):
 
 
 OOOTypes_dict = {value: label for value, label in OOOTypes.choices}
+
+OOOTypes_list = [{"value": value, "label": label.capitalize()} for value, label in OOOTypes.choices]
 
 
 class OOO(BaseModel):

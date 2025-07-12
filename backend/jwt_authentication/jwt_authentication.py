@@ -2,12 +2,16 @@ from typing import (
     Any,
     Dict,
 )
+from rest_framework.authentication import BaseAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 import jwt
 from jwt.exceptions import (
     ExpiredSignatureError,
     InvalidSignatureError,
 )
 from datetime import datetime, timedelta
+
+from employees.models import Employee
 
 try:
     from django.utils.translation import gettext as _
@@ -50,3 +54,39 @@ def decode_token(token: str) -> Dict[str, Any]:
         raise InvalidSignatureError(_("Invalid Signature."))
     except ExpiredSignatureError:
         raise ExpiredSignatureError(_("The token has expired."))
+    
+
+
+class JWTAuthentication(BaseAuthentication):
+    keyword = "Token"
+
+    def authenticate(self, request):
+        auth_header = request.META.get("HTTP_AUTHORIZATION")
+
+        # Validar si el encabezado existe y sigue el formato esperado
+        if not auth_header or not auth_header.startswith(f"{self.keyword} "):
+            return None  # Indica que no se puede autenticar, pero no lanza error aún
+
+        token = auth_header[len(self.keyword) + 1:].strip()
+
+        try:
+            payload = jwt.decode(token, key=SECRET_KEY, algorithms=["HS256"])
+        except ExpiredSignatureError:
+            raise AuthenticationFailed(_("Token has expired."))
+        except InvalidSignatureError:
+            raise AuthenticationFailed(_("Invalid token signature."))
+        except jwt.DecodeError:
+            raise AuthenticationFailed(_("Malformed token."))
+        except Exception:
+            raise AuthenticationFailed(_("Could not decode token."))
+
+        employee_id = payload.get("employee_id")
+        if not employee_id:
+            raise AuthenticationFailed(_("Invalid payload: missing employee_id."))
+
+        try:
+            employee = Employee.objects.get(pk=employee_id)
+        except Employee.DoesNotExist: # pylint: disable=no-member
+            raise AuthenticationFailed(_("Employee not found."))
+
+        return (employee, token)

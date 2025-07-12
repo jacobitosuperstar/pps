@@ -1,13 +1,13 @@
 import { createListenerMiddleware } from "@reduxjs/toolkit";
 import { loginUser, logoutUser } from "./auth.slice";
-import { localstorageKeys } from "@/constants";
-import { RootState } from "@/store/store";
+import { localstorageKeys } from "@/constant/localstorage-keys";
+import { type RootState } from "@/store/store";
 
 const authListener = createListenerMiddleware();
 
 authListener.startListening({
   actionCreator: loginUser,
-  effect: async (action, listenerApi) => {
+  effect: async (_action, listenerApi) => {
     // Can cancel other running instances
     listenerApi.cancelActiveListeners();
 
