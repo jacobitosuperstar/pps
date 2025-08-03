@@ -11,7 +11,8 @@ class Settings(BaseSettings):
     log_file: Optional[str] = None
     pythonpath: str = "."
 
-
+    # Testing mode - disable authentication for testing
+    disable_auth: bool = True
     # Database and Security
     database_url: str = "sqlite:///./db.sqlite3"
     algorithm: str = "HS256"

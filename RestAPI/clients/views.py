@@ -1,9 +1,16 @@
-from typing import List, Optional
+from typing import List, Dict, Optional
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from database import get_session
+
+from jwt_authentication.decorators import get_current_user
+from employees.models import (
+    RoleChoices,
+)
+from employees.utils import require_roles
+
 from .models import (
     DBClient,
     Client,
@@ -11,7 +18,6 @@ from .models import (
     ClientUpdate,
     PaginatedClients,
 )
-from base.db_base_services import filter_instances
 
 
 router: APIRouter = APIRouter(
@@ -27,27 +33,77 @@ def get_clients(
     client_email: Optional[str] = None,
     client_phone_code: Optional[str] = None,
     client_phone_number: Optional[str] = None,
+    created_at_from: Optional[str] = None,
+    created_at_to: Optional[str] = None,
+    updated_at_from: Optional[str] = None,
+    updated_at_to: Optional[str] = None,
     client_deleted: bool = False,
+    token=Depends(get_current_user),
     limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
     session: Session = Depends(get_session),
-):
+) -> PaginatedClients:
+    """Retrieve clients with flexible filtering and pagination.
+
+    Filtering options:
+    - client_id: Exact match
+    - client_name: Case-insensitive contains search
+    - client_email: Case-insensitive contains search
+    - client_phone_code: Case-insensitive contains search
+    - client_phone_number: Case-insensitive contains search
+    - created_at_from/created_at_to: Date range filtering
+    - updated_at_from/updated_at_to: Date range filtering
+    - client_deleted: Boolean filter
     """
-    Retrieve clients (optionally including deleted ones), with optional filtering by fields and pagination.
-    Use the client_deleted query parameter to include deleted clients if needed.
-    """
-    filters = {
-        "deleted": client_deleted,
-        "client_id": client_id,
-        "client_name": client_name,
-        "client_email": client_email,
-        "client_phone_code": client_phone_code,
-        "client_phone_number": client_phone_number,
-    }
-    filters = {k: v for k, v in filters.items() if v is not None}
-    clients, total_count = filter_instances(DBClient, session, filters, limit=limit, offset=offset)
-    # Use Pydantic model for serialization
-    results = [ClientRead.model_validate(c) for c in clients]
+    require_roles(
+        token=token,
+        allowed_roles=[
+            RoleChoices.MANAGEMENT,
+            RoleChoices.ACCOUNTING
+        ],
+    )
+
+    # Build query with flexible filtering
+    query = session.query(DBClient)
+
+    # Exact match for ID
+    if client_id:
+        query = query.filter(DBClient.client_id == client_id)
+
+    # Case-insensitive contains for text fields
+    if client_name:
+        query = query.filter(DBClient.client_name.ilike(f"%{client_name}%"))
+    if client_email:
+        query = query.filter(DBClient.client_email.ilike(f"%{client_email}%"))
+    if client_phone_code:
+        query = query.filter(DBClient.client_phone_code.ilike(f"%{client_phone_code}%"))
+    if client_phone_number:
+        query = query.filter(DBClient.client_phone_number.ilike(f"%{client_phone_number}%"))
+
+    # Date range filtering
+    if created_at_from:
+        query = query.filter(DBClient.created_at >= created_at_from)
+    if created_at_to:
+        query = query.filter(DBClient.created_at <= created_at_to)
+    if updated_at_from:
+        query = query.filter(DBClient.updated_at >= updated_at_from)
+    if updated_at_to:
+        query = query.filter(DBClient.updated_at <= updated_at_to)
+
+    # Boolean filter
+    query = query.filter(DBClient.deleted == client_deleted)
+
+    # Get total count before pagination
+    total_count = query.count()
+
+    # Apply pagination
+    results = query.offset(offset).limit(limit).all()
+
+    # Convert to response models
+    results: List[ClientRead] = [
+        ClientRead.model_validate(c)
+        for c in results
+    ]
     return PaginatedClients(results=results, total_count=total_count)
 
 
@@ -58,9 +114,18 @@ def get_clients(
 )
 def create_client(
     payload: Client,
+    token=Depends(get_current_user),
     session: Session = Depends(get_session),
+    response_model=ClientRead,
 ) -> DBClient:
     """Create a new active client."""
+    require_roles(
+        token=token,
+        allowed_roles=[
+            RoleChoices.MANAGEMENT,
+            RoleChoices.ACCOUNTING
+        ],
+    )
     client: Optional[DBClient] = session.query(DBClient).filter_by(client_id=payload.client_id).first()
     if client:
         raise HTTPException(
@@ -74,9 +139,17 @@ def create_client(
 @router.get("/{client_id}", response_model=ClientRead)
 def get_client(
     client_id: str,
+    token=Depends(get_current_user),
     session: Session = Depends(dependency=get_session),
 ) -> DBClient:
     """Get a client."""
+    require_roles(
+        token=token,
+        allowed_roles=[
+            RoleChoices.MANAGEMENT,
+            RoleChoices.ACCOUNTING
+        ],
+    )
     client: Optional[DBClient] = session.query(DBClient).filter_by(client_id=client_id).first()
     if not client:
         raise HTTPException(
@@ -90,9 +163,18 @@ def get_client(
 def update_client(
     client_id: str,
     payload: ClientUpdate,
+    token=Depends(get_current_user),
     session: Session = Depends(dependency=get_session),
+    response_model=ClientRead,
 ) -> Client:
     """Update an active client."""
+    require_roles(
+        token=token,
+        allowed_roles=[
+            RoleChoices.MANAGEMENT,
+            RoleChoices.ACCOUNTING
+        ],
+    )
     client: Optional[DBClient] = session.query(DBClient).filter_by(client_id=client_id).first()
     if not client:
         raise HTTPException(
@@ -106,9 +188,17 @@ def update_client(
 @router.delete("/{client_id}")
 def delete_client(
     client_id: str,
+    token=Depends(get_current_user),
     session: Session = Depends(dependency=get_session),
 ) -> Response:
     """Update an active client."""
+    require_roles(
+        token=token,
+        allowed_roles=[
+            RoleChoices.MANAGEMENT,
+            RoleChoices.ACCOUNTING
+        ],
+    )
     client: Optional[DBClient] = session.query(DBClient).filter_by(client_id=client_id).first()
     if client:
         client.delete_instance(session=session, soft_delete=True)
