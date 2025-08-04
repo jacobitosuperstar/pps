@@ -1,0 +1,43 @@
+{
+    "description": "Specialized endpoints test set for shifts",
+    "url": "/shifts/machine/1/shifts",
+    "test_cases": [
+        {
+            "test_description": "Get machine shifts - returns list of shifts for existing machine",
+            "input": {},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["[]"]
+            }
+        },
+        {
+            "test_description": "Get machine shifts with date range filter",
+            "input": {"query_params": {"date_from": "2024-08-01", "date_to": "2024-08-31"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["[]"]
+            }
+        },
+        {
+            "test_description": "Get machine shifts with shift type filter - production",
+            "input": {"query_params": {"shift_type": "production"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["[]"]
+            }
+        },
+        {
+            "test_description": "Get machine shifts with shift type filter - maintenance",
+            "input": {"query_params": {"shift_type": "maintenance"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["[]"]
+            }
+        },
+        {
+            "test_description": "Get shifts for non-existent machine",
+            "input": {},
+            "expected_output": {"status_code": 404}
+        }
+    ]
+}

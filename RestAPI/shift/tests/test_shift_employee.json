@@ -1,0 +1,22 @@
+{
+    "description": "Employee shifts endpoint test set",
+    "url": "/shifts/employee/TEST_USER/shifts",
+    "test_cases": [
+        {
+            "test_description": "Get employee shifts - returns list for existing employee",
+            "input": {},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["[]"]
+            }
+        },
+        {
+            "test_description": "Get employee shifts with date range filter",
+            "input": {"query_params": {"date_from": "2024-08-01", "date_to": "2024-08-31"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["[]"]
+            }
+        }
+    ]
+}

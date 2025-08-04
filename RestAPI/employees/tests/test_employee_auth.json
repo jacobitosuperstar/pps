@@ -1,0 +1,60 @@
+{
+    "description": "Employee authentication test set",
+    "url": "/employees/login",
+    "test_cases": [
+        {
+            "test_description": "Login with valid credentials",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "identification": "TEST_USER",
+                    "password": "hashed_password_test"
+                }
+            },
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["token", "employee_id"]
+            }
+        },
+        {
+            "test_description": "Login with invalid credentials",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "identification": "TEST_USER",
+                    "password": "wrong_password"
+                }
+            },
+            "expected_output": {
+                "status_code": 401,
+                "response_contains": ["Invalid credentials"]
+            }
+        },
+        {
+            "test_description": "Login with non-existent user",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "identification": "NON_EXISTENT",
+                    "password": "any_password"
+                }
+            },
+            "expected_output": {
+                "status_code": 401,
+                "response_contains": ["Invalid credentials"]
+            }
+        },
+        {
+            "test_description": "Login with missing fields",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "identification": "TEST_USER"
+                }
+            },
+            "expected_output": {
+                "status_code": 422
+            }
+        }
+    ]
+}

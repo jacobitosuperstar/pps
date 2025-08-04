@@ -1,0 +1,83 @@
+{
+    "description": "Machine operators operations test set",
+    "url": "/machines/operators/",
+    "test_cases": [
+        {
+            "test_description": "Get all machine operators - returns paginated response",
+            "input": {},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter operators by machine_id",
+            "input": {"query_params": {"machine_id": 1}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter operators by employee_id",
+            "input": {"query_params": {"employee_id": "TEST_USER"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter operators by skill level",
+            "input": {"query_params": {"skill_level": "trained"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Create new operator assignment",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "machine_id": 2,
+                    "employee_id": "TEST_USER",
+                    "skill_level": "trainee"
+                }
+            },
+            "expected_output": {
+                "status_code": 201,
+                "response_contains": ["id", "machine_id", "employee_id"]
+            }
+        },
+        {
+            "test_description": "Create operator for non-existent machine",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "machine_id": 9999,
+                    "employee_id": "TEST_USER",
+                    "skill_level": "trained"
+                }
+            },
+            "expected_output": {
+                "status_code": 404,
+                "response_contains": ["Machine not found"]
+            }
+        },
+        {
+            "test_description": "Create operator for non-existent employee",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "machine_id": 1,
+                    "employee_id": "NON_EXISTENT_USER",
+                    "skill_level": "trained"
+                }
+            },
+            "expected_output": {
+                "status_code": 404,
+                "response_contains": ["Employee not found"]
+            }
+        }
+    ]
+}

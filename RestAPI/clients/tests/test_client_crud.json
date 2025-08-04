@@ -1,0 +1,106 @@
+{
+    "description": "CRUD operations test set for clients",
+    "url": "/clients/",
+    "test_cases": [
+        {
+            "test_description": "Get all clients - returns paginated response",
+            "input": {},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Get clients with pagination",
+            "input": {"query_params": {"limit": 3, "offset": 0}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Search clients by company name",
+            "input": {"query_params": {"company_name": "Test Company"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Search clients by contact name",
+            "input": {"query_params": {"contact_name": "Test Contact"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter clients by email domain",
+            "input": {"query_params": {"email": "testcompany.com"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Create new client with valid data",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "identification": "NEW_CLIENT_999",
+                    "company_name": "New Test Company",
+                    "contact_name": "New Contact Person",
+                    "email": "contact@newcompany.com",
+                    "phone": "+1999888777",
+                    "address": "999 New Street, New City"
+                }
+            },
+            "expected_output": {
+                "status_code": 201,
+                "response_contains": ["identification", "NEW_CLIENT_999", "company_name"]
+            }
+        },
+        {
+            "test_description": "Create client with duplicate identification",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "identification": "TEST_CLIENT",
+                    "company_name": "Duplicate Company",
+                    "contact_name": "Duplicate Contact",
+                    "email": "duplicate@example.com"
+                }
+            },
+            "expected_output": {
+                "status_code": 400
+            }
+        },
+        {
+            "test_description": "Create client with invalid email",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "identification": "INVALID_EMAIL_CLIENT",
+                    "company_name": "Invalid Email Company",
+                    "contact_name": "Invalid Contact",
+                    "email": "invalid_email_format"
+                }
+            },
+            "expected_output": {
+                "status_code": 422
+            }
+        },
+        {
+            "test_description": "Create client with missing required fields",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "identification": "INCOMPLETE_CLIENT"
+                }
+            },
+            "expected_output": {
+                "status_code": 422
+            }
+        }
+    ]
+}

@@ -9,17 +9,7 @@ from base.models import Base, PaginatedElements
 
 
 class DBProduct(Base):
-    """
-    Items created from the company that are being sold to different clients.
-
-    Attributes:
-        id: Unique identifier for the product.
-        name: Name of the product.
-        materials: Dictionary of materials and amounts needed for the creation of the product.
-        created_at: When the record was created.
-        updated_at: When the record was last updated.
-        deleted: Soft delete flag.
-    """
+    """Products manufactured by the company."""
     __tablename__ = "product"
 
     id = Column(
@@ -105,5 +95,4 @@ class ProductRead(Product):
     model_config = ConfigDict(from_attributes=True)
 
 
-# Type alias for paginated products
 PaginatedProducts = PaginatedElements[ProductRead]

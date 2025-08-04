@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional
 from datetime import datetime
 
 from sqlalchemy import Column, String
@@ -10,19 +10,7 @@ from base.models import Base, PaginatedElements
 
 
 class DBClient(Base):
-    """
-    Clients to which the company generates production orders.
-
-    Attributes:
-        client_id: Unique identifier for the client (CC/NIT).
-        client_name: Name of the client.
-        client_email: Email of the client.
-        client_phone_code: Country code (e.g., "+57").
-        client_phone_number: Client's phone number.
-        created_at: When the record was created.
-        updated_at: When the record was last updated.
-        deleted: Soft delete flag.
-    """
+    """Clients to which the company generates production orders."""
     __tablename__ = "client"
 
     client_id = Column(
@@ -51,7 +39,6 @@ class DBClient(Base):
 
     # Relationships
     sale_orders = relationship("DBSaleOrder", back_populates="client")
-
 
 
 class Client(BaseModel):
@@ -98,5 +85,4 @@ class ClientRead(Client):
     model_config = ConfigDict(from_attributes=True)
 
 
-# Type alias for paginated clients
 PaginatedClients = PaginatedElements[ClientRead]

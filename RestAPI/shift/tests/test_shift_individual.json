@@ -1,0 +1,26 @@
+{
+    "description": "Individual shift operations test set",
+    "url": "/shifts/1",
+    "test_cases": [
+        {
+            "test_description": "Get individual shift by ID - non-existent shift",
+            "input": {},
+            "expected_output": {"status_code": 404}
+        },
+        {
+            "test_description": "Update shift - non-existent shift",
+            "input": {
+                "method": "PUT",
+                "json": {
+                    "description": "Updated description"
+                }
+            },
+            "expected_output": {"status_code": 404}
+        },
+        {
+            "test_description": "Delete shift - non-existent shift",
+            "input": {"method": "DELETE"},
+            "expected_output": {"status_code": 404}
+        }
+    ]
+}

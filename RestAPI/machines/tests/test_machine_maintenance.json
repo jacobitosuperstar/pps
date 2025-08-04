@@ -1,0 +1,72 @@
+{
+    "description": "Machine maintenance operations test set",
+    "url": "/machines/maintenance/",
+    "test_cases": [
+        {
+            "test_description": "Get all maintenance records - returns paginated response",
+            "input": {},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter maintenance by status - scheduled",
+            "input": {"query_params": {"status": "scheduled"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter maintenance by type - preventive",
+            "input": {"query_params": {"maintenance_type": "preventive"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter maintenance by machine_id",
+            "input": {"query_params": {"machine_id": 1}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Create new maintenance record",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "machine_id": 1,
+                    "maintenance_type": "corrective",
+                    "status": "scheduled",
+                    "scheduled_date": "2024-08-20",
+                    "description": "Fix conveyor belt issue",
+                    "estimated_hours": 6.0
+                }
+            },
+            "expected_output": {
+                "status_code": 201,
+                "response_contains": ["id", "maintenance_type", "corrective"]
+            }
+        },
+        {
+            "test_description": "Create maintenance for non-existent machine",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "machine_id": 9999,
+                    "maintenance_type": "preventive",
+                    "scheduled_date": "2024-08-25",
+                    "description": "Maintenance for non-existent machine"
+                }
+            },
+            "expected_output": {
+                "status_code": 404,
+                "response_contains": ["Machine not found"]
+            }
+        }
+    ]
+}

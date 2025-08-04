@@ -9,11 +9,6 @@ from pydantic import BaseModel, Field, ConfigDict
 from base.models import Base, PaginatedElements
 from employees.models import EmployeeRead
 
-
-# ============================================================================
-# MACHINE MODELS
-# ============================================================================
-
 class MachineStatus(str, Enum):
     ACTIVE = "active"
     MAINTENANCE = "maintenance"
@@ -22,24 +17,7 @@ class MachineStatus(str, Enum):
 
 
 class DBMachine(Base):
-    """
-    Physical machines in the plant.
-
-    Attributes:
-        id: Unique identifier for the machine.
-        machine_code: Machine code/identifier.
-        name: Machine name.
-        status: Current status (active, maintenance, inactive, retired).
-        location: Physical location in the plant.
-        description: Machine description.
-        manufacturer: Machine manufacturer.
-        model: Machine model.
-        serial_number: Machine serial number.
-        installation_date: When the machine was installed.
-        created_at: When the record was created.
-        updated_at: When the record was last updated.
-        deleted: Soft delete flag.
-    """
+    """Physical machines in the plant."""
     __tablename__ = "machines"
 
     id = Column(
@@ -132,10 +110,6 @@ class MachineRead(Machine):
 PaginatedMachines = PaginatedElements[MachineRead]
 
 
-# ============================================================================
-# MACHINE MAINTENANCE MODELS
-# ============================================================================
-
 class MaintenanceType(str, Enum):
     PREVENTIVE = "preventive"
     CORRECTIVE = "corrective"
@@ -153,24 +127,7 @@ class MaintenanceStatus(str, Enum):
 
 
 class DBMachineMaintenance(Base):
-    """
-    Maintenance records for machines.
-
-    Attributes:
-        id: Unique identifier for the maintenance record.
-        machine_id: Foreign key to the machine.
-        maintenance_type: Type of maintenance (preventive, corrective, etc.).
-        status: Current status of the maintenance.
-        scheduled_date: When the maintenance was scheduled.
-        actual_date: When the maintenance was actually performed.
-        cost: Cost of the maintenance.
-        description: Description of the maintenance work.
-        work_performed: Detailed description of work performed.
-        next_maintenance_date: Proposed date for next maintenance.
-        created_at: When the record was created.
-        updated_at: When the record was last updated.
-        deleted: Soft delete flag.
-    """
+    """Maintenance records for machines."""
     __tablename__ = "machine_maintenance"
 
     id = Column(
@@ -258,28 +215,13 @@ class MachineMaintenanceRead(MachineMaintenance):
 PaginatedMachineMaintenance = PaginatedElements[MachineMaintenanceRead]
 
 
-# ============================================================================
-# MACHINE OPERATOR RELATIONSHIP MODELS
-# ============================================================================
-
 class OperatorSkillLevel(str, Enum):
-    TRAINED = "trained"      # Fully trained operator
-    TRAINEE = "trainee"      # Learning to operate
+    TRAINED = "trained"
+    TRAINEE = "trainee"
 
 
 class DBMachineOperator(Base):
-    """
-    Relationship between machines and operators (employees who can operate them).
-
-    Attributes:
-        id: Unique identifier for the relationship.
-        machine_id: Foreign key to the machine.
-        employee_id: Foreign key to the employee.
-        skill_level: Operator's skill level for this machine.
-        created_at: When the record was created.
-        updated_at: When the record was last updated.
-        deleted: Soft delete flag.
-    """
+    """Relationship between machines and operators."""
     __tablename__ = "machine_operators"
 
     id = Column(

@@ -1,0 +1,129 @@
+{
+    "description": "CRUD operations test set for shifts",
+    "url": "/shifts/",
+    "test_cases": [
+        {
+            "test_description": "Get all shifts - returns paginated response",
+            "input": {},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Get shifts with pagination",
+            "input": {"query_params": {"limit": 5, "offset": 0}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter shifts by production type",
+            "input": {"query_params": {"shift_type": "production"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter shifts by maintenance type",
+            "input": {"query_params": {"shift_type": "maintenance"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter shifts by scheduled status",
+            "input": {"query_params": {"status": "scheduled"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter shifts by datetime range",
+            "input": {"query_params": {"start_datetime_from": "2024-08-01T00:00:00", "start_datetime_to": "2024-08-31T23:59:59"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Create production shift with valid data",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "machine_id": 1,
+                    "employee_id": "TEST_USER",
+                    "product_id": 1,
+                    "shift_type": "production",
+                    "status": "scheduled",
+                    "start_datetime": "2024-08-04T08:00:00",
+                    "end_datetime": "2024-08-04T16:00:00",
+                    "description": "Test production shift"
+                }
+            },
+            "expected_output": {
+                "status_code": 201,
+                "response_contains": ["id", "production_code", "shift_type"]
+            }
+        },
+        {
+            "test_description": "Create maintenance shift without product",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "machine_id": 1,
+                    "employee_id": "TEST_USER",
+                    "shift_type": "maintenance",
+                    "status": "scheduled",
+                    "start_datetime": "2024-08-05T09:00:00",
+                    "end_datetime": "2024-08-05T11:00:00",
+                    "description": "Preventive maintenance"
+                }
+            },
+            "expected_output": {
+                "status_code": 201,
+                "response_contains": ["id", "shift_type", "maintenance"]
+            }
+        },
+        {
+            "test_description": "Create shift with invalid datetime order",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "machine_id": 1,
+                    "employee_id": "TEST_USER",
+                    "shift_type": "production",
+                    "start_datetime": "2024-08-04T16:00:00",
+                    "end_datetime": "2024-08-04T08:00:00",
+                    "description": "Invalid time range"
+                }
+            },
+            "expected_output": {
+                "status_code": 400,
+                "response_contains": ["Start datetime must be before end datetime"]
+            }
+        },
+        {
+            "test_description": "Create production shift without product_id",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "machine_id": 1,
+                    "employee_id": "TEST_USER",
+                    "shift_type": "production",
+                    "start_datetime": "2024-08-04T08:00:00",
+                    "end_datetime": "2024-08-04T16:00:00",
+                    "description": "Production without product"
+                }
+            },
+            "expected_output": {
+                "status_code": 400,
+                "response_contains": ["Product ID is required for production shifts"]
+            }
+        }
+    ]
+}

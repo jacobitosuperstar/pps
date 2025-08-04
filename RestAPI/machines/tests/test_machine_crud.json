@@ -1,0 +1,95 @@
+{
+    "description": "CRUD operations test set for machines",
+    "url": "/machines/",
+    "test_cases": [
+        {
+            "test_description": "Get all machines - returns paginated response",
+            "input": {},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Get machines with pagination",
+            "input": {"query_params": {"limit": 2, "offset": 0}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter machines by status - active",
+            "input": {"query_params": {"status": "active"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter machines by status - maintenance",
+            "input": {"query_params": {"status": "maintenance"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter machines by location",
+            "input": {"query_params": {"location": "Production Floor A"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Create new machine with valid data",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "machine_code": "TEST_NEW_MACHINE",
+                    "name": "New Test Machine",
+                    "status": "active",
+                    "location": "Test Location",
+                    "description": "Newly created test machine",
+                    "manufacturer": "New Manufacturer",
+                    "model": "NM-2024",
+                    "serial_number": "NM001-2024",
+                    "installation_date": "2024-08-01"
+                }
+            },
+            "expected_output": {
+                "status_code": 201,
+                "response_contains": ["id", "machine_code", "TEST_NEW_MACHINE"]
+            }
+        },
+        {
+            "test_description": "Create machine with duplicate machine_code",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "machine_code": "TEST_MACHINE_001",
+                    "name": "Duplicate Machine",
+                    "status": "active"
+                }
+            },
+            "expected_output": {
+                "status_code": 400
+            }
+        },
+        {
+            "test_description": "Create machine with invalid status",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "machine_code": "INVALID_STATUS_MACHINE",
+                    "name": "Invalid Status Machine",
+                    "status": "invalid_status"
+                }
+            },
+            "expected_output": {
+                "status_code": 422
+            }
+        }
+    ]
+}

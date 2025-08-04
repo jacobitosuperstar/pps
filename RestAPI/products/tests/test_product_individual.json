@@ -1,0 +1,67 @@
+{
+    "description": "Individual product operations test set",
+    "url": "/products/1",
+    "test_cases": [
+        {
+            "test_description": "Get product by ID - existing product",
+            "input": {},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["id", "name", "materials"]
+            }
+        },
+        {
+            "test_description": "Update product - change name and materials",
+            "input": {
+                "method": "PUT",
+                "json": {
+                    "name": "Updated Test Product ABC",
+                    "materials": {
+                        "updated_steel": {"quantity": 12, "unit": "kg"},
+                        "updated_plastic": {"quantity": 3, "unit": "pieces"},
+                        "new_component": {"quantity": 1, "unit": "piece"}
+                    }
+                }
+            },
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["Updated Test Product ABC", "updated_steel", "new_component"]
+            }
+        },
+        {
+            "test_description": "Update product with invalid data",
+            "input": {
+                "method": "PUT",
+                "json": {
+                    "name": "",
+                    "materials": {}
+                }
+            },
+            "expected_output": {
+                "status_code": 422
+            }
+        },
+        {
+            "test_description": "Update product with duplicate name",
+            "input": {
+                "method": "PUT",
+                "json": {
+                    "name": "Test Electronics Component"
+                }
+            },
+            "expected_output": {
+                "status_code": 400
+            }
+        },
+        {
+            "test_description": "Delete product - soft delete",
+            "input": {"method": "DELETE"},
+            "expected_output": {"status_code": 204}
+        },
+        {
+            "test_description": "Get non-existent product",
+            "input": {},
+            "expected_output": {"status_code": 404}
+        }
+    ]
+}
