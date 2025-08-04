@@ -54,12 +54,12 @@ class DBShift(Base):
     )
     production_order_id = Column(
         Integer,
-        ForeignKey("production_orders.id"),
+        ForeignKey("production_order.id"),
         nullable=True,  # Optional for maintenance, training, etc.
     )
     product_id = Column(
         Integer,
-        ForeignKey("products.id"),
+        ForeignKey("product.id"),
         nullable=True,  # Only required for production shifts
     )
     shift_type = Column(
