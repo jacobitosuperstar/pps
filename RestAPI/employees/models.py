@@ -1,15 +1,12 @@
-from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 from datetime import date, datetime
 from enum import Enum
-from base.models import PaginatedElements, Base
+
 from sqlalchemy import Column, String, Date, DateTime, Integer, ForeignKey
 from sqlalchemy.orm import relationship
+from pydantic import BaseModel, Field, ConfigDict
 
-
-# =========================
-# Employee Section
-# =========================
+from base.models import Base, PaginatedElements
 
 
 class DBEmployee(Base):
@@ -99,11 +96,6 @@ class EmployeeLogin(BaseModel):
 
 
 PaginatedEmployees = PaginatedElements[EmployeeRead]
-
-
-# =========================
-# OOO Section
-# =========================
 
 
 class DBOOO(Base):

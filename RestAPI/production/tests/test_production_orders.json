@@ -1,0 +1,67 @@
+{
+    "description": "Production orders CRUD operations test set",
+    "url": "/production/",
+    "test_cases": [
+        {
+            "test_description": "Get all production orders - returns paginated response",
+            "input": {},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Get production orders with pagination",
+            "input": {"query_params": {"limit": 2, "offset": 0}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Search production orders by notes",
+            "input": {"query_params": {"notes": "Electronics"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Create new production order",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "notes": "New test production order for urgent delivery"
+                }
+            },
+            "expected_output": {
+                "status_code": 201,
+                "response_contains": ["id", "notes", "urgent delivery"]
+            }
+        },
+        {
+            "test_description": "Create production order with empty notes",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "notes": ""
+                }
+            },
+            "expected_output": {
+                "status_code": 201,
+                "response_contains": ["id", "notes"]
+            }
+        },
+        {
+            "test_description": "Create production order with null notes",
+            "input": {
+                "method": "POST",
+                "json": {}
+            },
+            "expected_output": {
+                "status_code": 201,
+                "response_contains": ["id"]
+            }
+        }
+    ]
+}

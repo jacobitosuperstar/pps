@@ -1,0 +1,104 @@
+{
+    "description": "Production order items CRUD operations test set",
+    "url": "/production/items/",
+    "test_cases": [
+        {
+            "test_description": "Get all production order items - returns paginated response",
+            "input": {},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter items by production_order_id",
+            "input": {"query_params": {"production_order_id": 1}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter items by product_id",
+            "input": {"query_params": {"product_id": 1}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Create new production order item",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "production_order_id": 1,
+                    "product_id": 1,
+                    "product_amount": 30
+                }
+            },
+            "expected_output": {
+                "status_code": 201,
+                "response_contains": ["id", "production_order_id", "product_id", "product_amount"]
+            }
+        },
+        {
+            "test_description": "Create item with zero amount",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "production_order_id": 1,
+                    "product_id": 1,
+                    "product_amount": 0
+                }
+            },
+            "expected_output": {
+                "status_code": 201,
+                "response_contains": ["id", "product_amount"]
+            }
+        },
+        {
+            "test_description": "Create item with negative amount",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "production_order_id": 1,
+                    "product_id": 1,
+                    "product_amount": -5
+                }
+            },
+            "expected_output": {
+                "status_code": 422
+            }
+        },
+        {
+            "test_description": "Create item for non-existent production order",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "production_order_id": 9999,
+                    "product_id": 1,
+                    "product_amount": 10
+                }
+            },
+            "expected_output": {
+                "status_code": 404,
+                "response_contains": ["Production order not found"]
+            }
+        },
+        {
+            "test_description": "Create item for non-existent product",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "production_order_id": 1,
+                    "product_id": 9999,
+                    "product_amount": 10
+                }
+            },
+            "expected_output": {
+                "status_code": 404,
+                "response_contains": ["Product not found"]
+            }
+        }
+    ]
+}

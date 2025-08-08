@@ -1,4 +1,4 @@
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 from datetime import datetime, date
 
 from sqlalchemy import Column, String, Integer, Text, Date, ForeignKey
@@ -10,22 +10,8 @@ from clients.models import DBClient
 from products.models import DBProduct
 
 
-# ============================================================================
-# SALE ORDER MODELS
-# ============================================================================
-
 class DBSaleOrder(Base):
-    """
-    Sale order for production.
-    
-    Attributes:
-        id: Unique identifier for the sale order.
-        client_id: Foreign key to the client.
-        notes: Notes from the commercial.
-        created_at: When the record was created.
-        updated_at: When the record was last updated.
-        deleted: Soft delete flag.
-    """
+    """Sale order for production."""
     __tablename__ = "sale_order"
 
     id = Column(
@@ -70,23 +56,8 @@ class SaleOrderRead(SaleOrder):
     model_config = ConfigDict(from_attributes=True)
 
 
-# ============================================================================
-# SALE ORDER ITEM MODELS
-# ============================================================================
-
 class DBSaleOrderItem(Base):
-    """
-    Items in a sale order.
-    
-    Attributes:
-        id: Unique identifier for the sale order item.
-        sale_order_id: Foreign key to the sale order.
-        product_id: Foreign key to the product.
-        product_amount: Amount of product needed.
-        created_at: When the record was created.
-        updated_at: When the record was last updated.
-        deleted: Soft delete flag.
-    """
+    """Items in a sale order."""
     __tablename__ = "sale_order_item"
 
     id = Column(
@@ -138,21 +109,8 @@ class SaleOrderItemRead(SaleOrderItem):
     model_config = ConfigDict(from_attributes=True)
 
 
-# ============================================================================
-# PRODUCTION ORDER MODELS
-# ============================================================================
-
 class DBProductionOrder(Base):
-    """
-    Production order.
-    
-    Attributes:
-        id: Unique identifier for the production order.
-        notes: Notes from the commercial.
-        created_at: When the record was created.
-        updated_at: When the record was last updated.
-        deleted: Soft delete flag.
-    """
+    """Production order."""
     __tablename__ = "production_order"
 
     id = Column(
@@ -189,23 +147,8 @@ class ProductionOrderRead(ProductionOrder):
     model_config = ConfigDict(from_attributes=True)
 
 
-# ============================================================================
-# PRODUCTION ORDER ITEM MODELS
-# ============================================================================
-
 class DBProductionOrderItem(Base):
-    """
-    Items in a production order.
-    
-    Attributes:
-        id: Unique identifier for the production order item.
-        production_order_id: Foreign key to the production order.
-        product_id: Foreign key to the product.
-        product_amount: Amount of product needed.
-        created_at: When the record was created.
-        updated_at: When the record was last updated.
-        deleted: Soft delete flag.
-    """
+    """Items in a production order."""
     __tablename__ = "production_order_item"
 
     id = Column(
@@ -257,23 +200,8 @@ class ProductionOrderItemRead(ProductionOrderItem):
     model_config = ConfigDict(from_attributes=True)
 
 
-# ============================================================================
-# QUALITY EVALUATION MODELS
-# ============================================================================
-
 class DBQualityEvaluation(Base):
-    """
-    Quality evaluation of production orders.
-    
-    Attributes:
-        id: Unique identifier for the quality evaluation.
-        sale_order_id: Foreign key to the sale order.
-        notes: Observations from quality personnel.
-        delivery_date: Date when the order was delivered.
-        created_at: When the record was created.
-        updated_at: When the record was last updated.
-        deleted: Soft delete flag.
-    """
+    """Quality evaluation of production orders."""
     __tablename__ = "quality_evaluation"
 
     id = Column(
@@ -366,25 +294,8 @@ class QualityEvaluationRead(QualityEvaluation):
     model_config = ConfigDict(from_attributes=True)
 
 
-# ============================================================================
-# NON-CONFORMING PRODUCT MODELS
-# ============================================================================
-
 class DBNonConformingProduct(Base):
-    """
-    Non-conforming products in quality evaluations. Those non conforming products
-    are the ones that are not conforming to the quality standards from a 
-    sale order item.
-    
-    Attributes:
-        id: Unique identifier for the non-conforming product.
-        quality_evaluation_id: Foreign key to the quality evaluation.
-        non_conforming_product_id: Foreign key to the sale order item.
-        non_conforming_product_amount: Amount of non-conforming product.
-        created_at: When the record was created.
-        updated_at: When the record was last updated.
-        deleted: Soft delete flag.
-    """
+    """Non-conforming products in quality evaluations."""
     __tablename__ = "non_conforming_product"
 
     id = Column(
@@ -436,11 +347,6 @@ class NonConformingProductRead(NonConformingProduct):
     model_config = ConfigDict(from_attributes=True)
 
 
-# ============================================================================
-# PAGINATED RESPONSE MODELS
-# ============================================================================
-
-# Type aliases for paginated responses
 PaginatedSaleOrders = PaginatedElements[SaleOrderRead]
 PaginatedProductionOrders = PaginatedElements[ProductionOrderRead]
 PaginatedQualityEvaluations = PaginatedElements[QualityEvaluationRead]

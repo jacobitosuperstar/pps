@@ -1,0 +1,101 @@
+{
+    "description": "CRUD operations test set for products",
+    "url": "/products/",
+    "test_cases": [
+        {
+            "test_description": "Get all products - returns paginated response",
+            "input": {},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Get products with pagination",
+            "input": {"query_params": {"limit": 3, "offset": 0}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Search products by name",
+            "input": {"query_params": {"name": "Test Product"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Create new product with materials",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "name": "New Test Product XYZ",
+                    "materials": {
+                        "wood": {"quantity": 5, "unit": "kg"},
+                        "nails": {"quantity": 50, "unit": "pieces"},
+                        "varnish": {"quantity": 0.25, "unit": "liters"}
+                    }
+                }
+            },
+            "expected_output": {
+                "status_code": 201,
+                "response_contains": ["id", "name", "New Test Product XYZ", "materials"]
+            }
+        },
+        {
+            "test_description": "Create product without materials",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "name": "Service Product Test",
+                    "materials": {}
+                }
+            },
+            "expected_output": {
+                "status_code": 201,
+                "response_contains": ["id", "name", "Service Product Test"]
+            }
+        },
+        {
+            "test_description": "Create product with duplicate name",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "name": "Test Product ABC",
+                    "materials": {"duplicate": {"quantity": 1, "unit": "piece"}}
+                }
+            },
+            "expected_output": {
+                "status_code": 400
+            }
+        },
+        {
+            "test_description": "Create product with empty name",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "name": "",
+                    "materials": {}
+                }
+            },
+            "expected_output": {
+                "status_code": 422
+            }
+        },
+        {
+            "test_description": "Create product with invalid materials structure",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "name": "Invalid Materials Product",
+                    "materials": "invalid_structure"
+                }
+            },
+            "expected_output": {
+                "status_code": 422
+            }
+        }
+    ]
+}

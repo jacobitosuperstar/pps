@@ -37,13 +37,20 @@ def login(
     payload: EmployeeLogin,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
+
     emp: Optional[DBEmployee] = session.query(
         DBEmployee
     ).filter_by(
         identification=payload.identification
     ).first()
 
-    if not emp or emp.password != payload.password or emp.role == RoleChoices.PRODUCTION.value:
+    if not emp:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    if (emp.password != payload.password) or (emp.role == RoleChoices.PRODUCTION.value):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
@@ -76,29 +83,59 @@ def list_employees(
     role: Optional[RoleChoices] = None,
     birthday: Optional[date] = None,
     is_active: Optional[bool] = None,
+    created_at_from: Optional[str] = None,
+    created_at_to: Optional[str] = None,
+    updated_at_from: Optional[str] = None,
+    updated_at_to: Optional[str] = None,
     limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
     token=Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> PaginatedEmployees:
     require_roles(token, [RoleChoices.HR, RoleChoices.MANAGEMENT])
-    filters: dict = {
-        "identification": identification,
-        "names": names,
-        "last_names": last_names,
-        "role": role,
-        "birthday": birthday,
-        "is_active": is_active,
-    }
-    filters: dict = {k: v for k, v in filters.items() if v is not None}
-    employees, total_count = filter_instances(
-        model=DBEmployee,
-        session=session,
-        filters=filters,
-        limit=limit,
-        offset=offset,
-    )
-    results: List[EmployeeRead] = [EmployeeRead.model_validate(e) for e in employees]
+    
+    # Build query with flexible filtering
+    query = session.query(DBEmployee)
+    
+    # Exact match for ID
+    if identification:
+        query = query.filter(DBEmployee.identification == identification)
+    
+    # Case-insensitive contains for text fields
+    if names:
+        query = query.filter(DBEmployee.names.ilike(f"%{names}%"))
+    if last_names:
+        query = query.filter(DBEmployee.last_names.ilike(f"%{last_names}%"))
+    
+    # Exact match for enum and boolean
+    if role:
+        query = query.filter(DBEmployee.role == role)
+    if birthday:
+        query = query.filter(DBEmployee.birthday == birthday)
+    if is_active is not None:
+        query = query.filter(DBEmployee.is_active == is_active)
+    
+    # Date range filtering
+    if created_at_from:
+        query = query.filter(DBEmployee.created_at >= created_at_from)
+    if created_at_to:
+        query = query.filter(DBEmployee.created_at <= created_at_to)
+    if updated_at_from:
+        query = query.filter(DBEmployee.updated_at >= updated_at_from)
+    if updated_at_to:
+        query = query.filter(DBEmployee.updated_at <= updated_at_to)
+    
+    # Get total count before pagination
+    total_count = query.count()
+    
+    # Apply pagination
+    results = query.offset(offset).limit(limit).all()
+    
+    # Convert to response models
+    results: List[EmployeeRead] = [
+        EmployeeRead.model_validate(emp)
+        for emp in results
+    ]
     return PaginatedEmployees(results=results, total_count=total_count)
 
 

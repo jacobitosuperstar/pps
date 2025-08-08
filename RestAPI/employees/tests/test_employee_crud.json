@@ -1,0 +1,86 @@
+{
+    "description": "CRUD operations test set for employees",
+    "url": "/employees/",
+    "test_cases": [
+        {
+            "test_description": "Get all employees - returns paginated response",
+            "input": {},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Get employees with pagination",
+            "input": {"query_params": {"limit": 3, "offset": 0}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter employees by role - management",
+            "input": {"query_params": {"role": "management"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Filter employees by role - production",
+            "input": {"query_params": {"role": "prod"}},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["results", "total_count"]
+            }
+        },
+        {
+            "test_description": "Create new employee with valid data",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "identification": "TEST_NEW_001",
+                    "names": "New Test",
+                    "last_names": "Employee",
+                    "role": "prod",
+                    "birthday": "1995-01-01",
+                    "password": "test_password"
+                }
+            },
+            "expected_output": {
+                "status_code": 201,
+                "response_contains": ["identification", "names", "role"]
+            }
+        },
+        {
+            "test_description": "Create employee with duplicate identification",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "identification": "TEST_USER",
+                    "names": "Duplicate",
+                    "last_names": "Employee",
+                    "role": "prod"
+                }
+            },
+            "expected_output": {
+                "status_code": 400
+            }
+        },
+        {
+            "test_description": "Create employee with invalid role",
+            "input": {
+                "method": "POST",
+                "json": {
+                    "identification": "TEST_INVALID_ROLE",
+                    "names": "Invalid",
+                    "last_names": "Role",
+                    "role": "invalid_role"
+                }
+            },
+            "expected_output": {
+                "status_code": 422
+            }
+        }
+    ]
+}

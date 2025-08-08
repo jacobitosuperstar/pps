@@ -1,0 +1,64 @@
+{
+    "description": "Individual client operations test set",
+    "url": "/clients/TEST_CLIENT",
+    "test_cases": [
+        {
+            "test_description": "Get client by ID - existing client",
+            "input": {},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["identification", "TEST_CLIENT", "company_name"]
+            }
+        },
+        {
+            "test_description": "Update client - change company name and contact",
+            "input": {
+                "method": "PUT",
+                "json": {
+                    "company_name": "Updated Test Company Ltd",
+                    "contact_name": "Updated Contact Person",
+                    "email": "updated@testcompany.com"
+                }
+            },
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["Updated Test Company Ltd", "Updated Contact Person"]
+            }
+        },
+        {
+            "test_description": "Update client with invalid email",
+            "input": {
+                "method": "PUT",
+                "json": {
+                    "email": "invalid_email_format"
+                }
+            },
+            "expected_output": {
+                "status_code": 422
+            }
+        },
+        {
+            "test_description": "Update client with partial data",
+            "input": {
+                "method": "PUT",
+                "json": {
+                    "phone": "+1555999888"
+                }
+            },
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["+1555999888"]
+            }
+        },
+        {
+            "test_description": "Delete client - soft delete",
+            "input": {"method": "DELETE"},
+            "expected_output": {"status_code": 204}
+        },
+        {
+            "test_description": "Get non-existent client",
+            "input": {},
+            "expected_output": {"status_code": 404}
+        }
+    ]
+}

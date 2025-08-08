@@ -4,6 +4,7 @@ import json
 from fastapi.testclient import TestClient
 from httpx import Response
 from ..main import app
+from settings import settings
 
 
 current_path: str = os.path.dirname(os.path.abspath(__file__))
@@ -40,6 +41,8 @@ def json_test_cases(folder_path:str) -> List[Dict]:
 
 test_cases: List[Dict] = json_test_cases(test_cases_folder)
 
+# Force disable authentication for tests
+settings.disable_auth = True
 
 client: TestClient = TestClient(app)
 

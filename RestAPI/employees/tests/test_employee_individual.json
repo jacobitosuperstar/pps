@@ -1,0 +1,46 @@
+{
+    "description": "Individual employee operations test set",
+    "url": "/employees/TEST_USER",
+    "test_cases": [
+        {
+            "test_description": "Get employee by ID - existing employee",
+            "input": {},
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["identification", "names", "role", "TEST_USER"]
+            }
+        },
+        {
+            "test_description": "Update employee - change names and role",
+            "input": {
+                "method": "PUT",
+                "json": {
+                    "names": "Updated Test",
+                    "last_names": "Updated User",
+                    "role": "quality"
+                }
+            },
+            "expected_output": {
+                "status_code": 200,
+                "response_contains": ["Updated Test", "quality"]
+            }
+        },
+        {
+            "test_description": "Update employee with invalid data",
+            "input": {
+                "method": "PUT",
+                "json": {
+                    "role": "invalid_role"
+                }
+            },
+            "expected_output": {
+                "status_code": 422
+            }
+        },
+        {
+            "test_description": "Delete employee - soft delete",
+            "input": {"method": "DELETE"},
+            "expected_output": {"status_code": 204}
+        }
+    ]
+}

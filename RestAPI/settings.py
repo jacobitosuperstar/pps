@@ -11,7 +11,10 @@ class Settings(BaseSettings):
     log_file: Optional[str] = None
     pythonpath: str = "."
 
-
+    # Testing mode - disable authentication for testing
+    # NOTE: This should be False in production, True only for development/testing
+    # Test files will override this to True regardless of this setting
+    disable_auth: bool = False
     # Database and Security
     database_url: str = "sqlite:///./db.sqlite3"
     algorithm: str = "HS256"
