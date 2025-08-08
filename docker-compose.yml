@@ -2,10 +2,10 @@ networks:
   server_network:
 
 services:
-  # Banckend
+  # Backend - FastAPI
   backend:
     build:
-      context: ./backend
+      context: ./RestAPI
       dockerfile: ./Dockerfile
     expose:
       - "8000"
@@ -13,19 +13,9 @@ services:
       - "8000:8000"
     volumes:
       - /app/.venv/
-      - ./backend/:/app/
+      - ./RestAPI/:/app/
     env_file:
       - ./pps.env
-    environment:
-      - DEBUG=${DEBUG:-true}
-      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-}
-    command: >
-      sh -c "
-      pipenv run python manage.py makemigrations &&
-      pipenv run python manage.py migrate &&
-      pipenv run python manage.py runserver 0.0.0.0:8000
-      "
-    # gunicorn -c gunicorn_config.py server.wsgi:application --timeout 10800
     networks:
       - server_network
   # Frontend App
