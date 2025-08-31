@@ -7,7 +7,7 @@ from jwt.exceptions import (
     ExpiredSignatureError,
     InvalidSignatureError,
 )
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from settings import settings
 
 SECRET_KEY = settings.secret_key
@@ -19,7 +19,7 @@ def create_token(**kwargs):
     """Creates a JWT with the named arguments passed. Adds the expiration time
     to the payload automaticaly.
     """
-    expiration_date = datetime.now() + timedelta(seconds=EXPIRATION)
+    expiration_date = datetime.now(UTC) + timedelta(seconds=EXPIRATION)
     expiration = int(expiration_date.timestamp())
     payload = {"exp": expiration}
     payload = {**payload, **kwargs}

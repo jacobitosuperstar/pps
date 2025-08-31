@@ -2,7 +2,7 @@ from typing import List, Dict, Optional
 from fastapi.responses import Response
 from sqlalchemy.orm import Session, selectinload
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from datetime import datetime, date
+from datetime import datetime, date, UTC
 
 from database import get_session
 from jwt_authentication.decorators import get_current_user
@@ -144,8 +144,15 @@ def create_machine(
             detail="Machine with this code already exists",
         )
 
-    machine: DBMachine = DBMachine.create_object(session=session, **payload.model_dump())
-    return machine
+    try:
+        machine: DBMachine = DBMachine.create_object(session=session, **payload.model_dump())
+        return machine
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating machine: {str(e)}"
+        )
 
 
 @router.get("/{machine_id}", response_model=MachineRead)
@@ -635,7 +642,7 @@ def get_available_operators(
 
     # Use current date if not specified
     if not date:
-        date = datetime.now().date()
+        date = datetime.now(UTC).date()
 
     # Get all operators for this machine
     operators = session.query(DBMachineOperator).filter_by(

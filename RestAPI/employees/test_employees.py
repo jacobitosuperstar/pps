@@ -3,7 +3,7 @@ import os
 import json
 from fastapi.testclient import TestClient
 from httpx import Response
-from ..main import app
+from main import app
 from .test_data_setup import create_test_employees
 from settings import settings
 
@@ -60,7 +60,7 @@ def test_employee_endpoints(url, test_description, input, expected_output):
     method = input.get("method", "GET").upper()
     query_params = input.get("query_params", {})
     json_data = input.get("json", None)
-    
+
     if method == "GET":
         response: Response = client.get(url, params=query_params)
     elif method == "POST":
@@ -71,13 +71,13 @@ def test_employee_endpoints(url, test_description, input, expected_output):
         response: Response = client.delete(url, params=query_params)
     else:
         raise ValueError(f"Unsupported HTTP method: {method}")
-    
+
     assert response.status_code == expected_output["status_code"], (
         f"Expected {expected_output['status_code']}, "
         f"but got {response.status_code} in the test case '{test_description}'. "
         f"Response body: {response.text}"
     )
-    
+
     # Optional: Check response body content if specified
     if "response_contains" in expected_output:
         response_text = response.text.lower()
