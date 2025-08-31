@@ -3,7 +3,7 @@ import os
 import json
 from fastapi.testclient import TestClient
 from httpx import Response
-from ..main import app
+from main import app
 from .test_data_setup import create_test_production_orders
 from settings import settings
 
@@ -11,7 +11,7 @@ current_path: str = os.path.dirname(os.path.abspath(__file__))
 test_cases_folder: str = os.path.join(current_path, "tests")
 
 def json_test_cases(folder_path: str) -> List[Dict]:
-    """Takes all the json files from the tests folder and picks up the test  
+    """Takes all the json files from the tests folder and picks up the test
     cases from them, creating a list with each one of the test cases.
     each test case will have:
         url, description, input, expected_output
@@ -60,7 +60,7 @@ def test_production_endpoints(url, test_description, input, expected_output):
     method = input.get("method", "GET").upper()
     query_params = input.get("query_params", {})
     json_data = input.get("json", None)
-    
+
     if method == "GET":
         response: Response = client.get(url, params=query_params)
     elif method == "POST":
@@ -71,13 +71,13 @@ def test_production_endpoints(url, test_description, input, expected_output):
         response: Response = client.delete(url, params=query_params)
     else:
         raise ValueError(f"Unsupported HTTP method: {method}")
-    
+
     assert response.status_code == expected_output["status_code"], (
         f"Expected {expected_output['status_code']}, "
         f"but got {response.status_code} in the test case '{test_description}'. "
         f"Response body: {response.text}"
     )
-    
+
     # Optional: Check response body content if specified
     if "response_contains" in expected_output:
         response_text = response.text.lower()

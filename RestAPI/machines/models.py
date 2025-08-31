@@ -37,6 +37,10 @@ class DBMachine(Base):
         String(100),
         nullable=False,
     )
+    machine_type = Column(
+        String(50),
+        nullable=False,
+    )
     status = Column(
         String(20),
         nullable=False,
@@ -66,6 +70,14 @@ class DBMachine(Base):
         Date,
         nullable=True,
     )
+    last_maintenance = Column(
+        Date,
+        nullable=True,
+    )
+    next_maintenance = Column(
+        Date,
+        nullable=True,
+    )
 
     # Relationships
     operators = relationship("DBMachineOperator", back_populates="machine", cascade="all, delete-orphan")
@@ -75,6 +87,7 @@ class DBMachine(Base):
 class Machine(BaseModel):
     machine_code: str = Field(..., description="Machine code/identifier")
     name: str = Field(..., description="Machine name")
+    machine_type: str = Field(..., description="Machine type")
     status: MachineStatus = Field(MachineStatus.ACTIVE, description="Current status")
     location: Optional[str] = Field(None, description="Physical location in the plant")
     description: Optional[str] = Field(None, description="Machine description")
@@ -82,6 +95,8 @@ class Machine(BaseModel):
     model: Optional[str] = Field(None, description="Machine model")
     serial_number: Optional[str] = Field(None, description="Machine serial number")
     installation_date: Optional[date] = Field(None, description="Installation date")
+    last_maintenance: Optional[date] = Field(None, description="Last maintenance date")
+    next_maintenance: Optional[date] = Field(None, description="Next maintenance date")
 
 
 class MachineUpdate(BaseModel):

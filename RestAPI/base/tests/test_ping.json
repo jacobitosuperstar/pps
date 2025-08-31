@@ -1,6 +1,6 @@
 {
      "description": "Health test set of the server",
-     "url": "/ping",
+     "url": "/health/",
      "test_cases": [
          {
              "test_description": "Health Check OK",

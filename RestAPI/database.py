@@ -13,7 +13,6 @@ engine: Engine= create_engine(
     connect_args={
         "check_same_thread": False,
         "timeout": 100,
-        "detect_types": 1,
     },
     future=True,
 )

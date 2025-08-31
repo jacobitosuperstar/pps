@@ -82,7 +82,6 @@ def list_employees(
     last_names: Optional[str] = None,
     role: Optional[RoleChoices] = None,
     birthday: Optional[date] = None,
-    is_active: Optional[bool] = None,
     created_at_from: Optional[str] = None,
     created_at_to: Optional[str] = None,
     updated_at_from: Optional[str] = None,
@@ -94,8 +93,7 @@ def list_employees(
 ) -> PaginatedEmployees:
     require_roles(token, [RoleChoices.HR, RoleChoices.MANAGEMENT])
     
-    # Build query with flexible filtering
-    query = session.query(DBEmployee)
+    query = session.query(DBEmployee).filter(DBEmployee.deleted == False)
     
     # Exact match for ID
     if identification:
@@ -112,8 +110,6 @@ def list_employees(
         query = query.filter(DBEmployee.role == role)
     if birthday:
         query = query.filter(DBEmployee.birthday == birthday)
-    if is_active is not None:
-        query = query.filter(DBEmployee.is_active == is_active)
     
     # Date range filtering
     if created_at_from:
@@ -151,13 +147,20 @@ def create_employee(
     session: Session = Depends(get_session),
 ) -> DBEmployee:
     require_roles(token, [RoleChoices.HR, RoleChoices.MANAGEMENT])
-    emp: DBEmployee = DBEmployee.create_object(
-        session,
-        date_joined=datetime.now().date(),
-        last_login=datetime.now(),
-        **payload.model_dump(),
-    )
-    return emp
+    try:
+        emp: DBEmployee = DBEmployee.create_object(
+            session,
+            date_joined=date.today(),
+            last_login=datetime.now(UTC),
+            **payload.model_dump(),
+        )
+        return emp
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating employee: {str(e)}"
+        )
 
 
 # --- Get Employee by Identification ---

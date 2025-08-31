@@ -3,7 +3,7 @@ import os
 import json
 from fastapi.testclient import TestClient
 from httpx import Response
-from ..main import app
+from main import app
 from settings import settings
 
 

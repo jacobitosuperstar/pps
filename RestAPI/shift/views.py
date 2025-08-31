@@ -1,5 +1,5 @@
-from typing import List, Dict, Optional
-from datetime import datetime, date
+from typing import List, Optional
+from datetime import datetime, UTC
 from fastapi.responses import Response
 from sqlalchemy.orm import Session, selectinload
 from fastapi import APIRouter, Depends, HTTPException, status, Query
@@ -115,7 +115,7 @@ def get_shifts(
     return PaginatedShifts(results=results, total_count=total_count)
 
 
-@router.post("/", response_model=ShiftRead)
+@router.post("/", response_model=ShiftRead, status_code=status.HTTP_201_CREATED)
 def create_shift(
     payload: Shift,
     token=Depends(get_current_user),
@@ -129,83 +129,103 @@ def create_shift(
             RoleChoices.PRODUCTION_MANAGER
         ],
     )
-
-    # Validate machine exists
-    machine = session.query(DBMachine).filter_by(id=payload.machine_id).first()
-    if not machine:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Machine not found",
-        )
-
-    # Validate employee exists
-    employee = session.query(DBEmployee).filter_by(identification=payload.employee_id).first()
-    if not employee:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Employee not found",
-        )
-
-    # Validate production order exists (if provided)
-    if payload.production_order_id:
-        production_order = session.query(DBProductionOrder).filter_by(id=payload.production_order_id).first()
-        if not production_order:
+    
+    try:
+        # Validate machine exists
+        machine = session.query(DBMachine).filter_by(id=payload.machine_id).first()
+        if not machine:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Production order not found",
+                detail="Machine not found",
             )
 
-    # Validate product exists (if provided)
-    if payload.product_id:
-        product = session.query(DBProduct).filter_by(id=payload.product_id).first()
-        if not product:
+        # Validate employee exists
+        employee = session.query(DBEmployee).filter_by(identification=payload.employee_id).first()
+        if not employee:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Product not found",
+                detail="Employee not found",
             )
 
-    # Validate that production shifts have a product
-    if payload.shift_type == ShiftType.PRODUCTION and not payload.product_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Product ID is required for production shifts",
-        )
+        # Validate production order exists (if provided)
+        if payload.production_order_id:
+            production_order = session.query(DBProductionOrder).filter_by(id=payload.production_order_id).first()
+            if not production_order:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Production order not found",
+                )
 
-    # Validate datetime logic
-    if payload.start_datetime >= payload.end_datetime:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Start datetime must be before end datetime",
-        )
+        # Validate product exists (if provided)
+        if payload.product_id:
+            product = session.query(DBProduct).filter_by(id=payload.product_id).first()
+            if not product:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Product not found",
+                )
 
+        # Validate that production shifts have a product
+        if payload.shift_type == ShiftType.PRODUCTION and not payload.product_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Product ID is required for production shifts",
+            )
 
-    # Generate production code for production shifts
-    production_code = None
-    if payload.shift_type == ShiftType.PRODUCTION and payload.product_id:
-        # Get machine code and product name for production code generation
-        machine_code = machine.machine_code
-        product_name = product.name
+        # Validate datetime logic
+        if payload.start_datetime >= payload.end_datetime:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Start datetime must be before end datetime",
+            )
 
-        # Generate unique production code: MACHINE_CODE-PRODUCT_NAME-TIMESTAMP
-        from datetime import datetime
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        production_code = f"{machine_code}-{product_name[:10].upper()}-{timestamp}"
+        # Generate production code for production shifts
+        production_code = None
+        if payload.shift_type == ShiftType.PRODUCTION and payload.product_id:
+            # Get machine code and product name for production code generation
+            machine_code = machine.machine_code
+            product_name = product.name
 
-        # Ensure uniqueness
-        existing_code = session.query(DBShift).filter_by(production_code=production_code).first()
-        counter = 1
-        original_code = production_code
-        while existing_code:
-            production_code = f"{original_code}-{counter:02d}"
+            # Generate unique production code: MACHINE_CODE-PRODUCT_NAME-TIMESTAMP
+            timestamp = datetime.now(UTC).strftime("%Y%m%d%H%M%S")
+            production_code = f"{machine_code}-{product_name[:10].upper()}-{timestamp}"
+
+            # Ensure uniqueness
             existing_code = session.query(DBShift).filter_by(production_code=production_code).first()
-            counter += 1
+            counter = 1
+            original_code = production_code
+            while existing_code:
+                production_code = f"{original_code}-{counter:02d}"
+                existing_code = session.query(DBShift).filter_by(production_code=production_code).first()
+                counter += 1
 
-    # Create shift with generated production code
-    shift_data = payload.model_dump()
-    shift_data['production_code'] = production_code
-
-    db_shift = DBShift.create_object(session=session, **shift_data)
-    return db_shift
+        # Create shift with generated production code
+        start_dt = payload.start_datetime
+        end_dt = payload.end_datetime
+        
+        # Use create_object method now that Base model is fixed
+        db_shift = DBShift.create_object(
+            session=session,
+            machine_id=payload.machine_id,
+            employee_id=payload.employee_id,
+            production_order_id=payload.production_order_id,
+            product_id=payload.product_id,
+            shift_type=payload.shift_type.value,
+            status=payload.status.value,
+            start_datetime=start_dt,
+            end_datetime=end_dt,
+            production_code=production_code,
+            description=payload.description,
+            notes=payload.notes
+        )
+        
+        return db_shift
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating shift: {str(e)}"
+        )
 
 
 @router.get("/{shift_id}", response_model=ShiftRead)
