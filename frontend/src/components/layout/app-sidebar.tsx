@@ -1,97 +1,37 @@
-import {
-  LayoutDashboard,
-  Factory,
-  Settings2,
-  PackagePlus,
-  Users,
-} from "lucide-react";
-
-import { NavMain } from "./nav-main";
-import { NavSecondary } from "./nav-secondary";
-import { NavUser } from "./nav-user";
+import { useLayout } from '@/context/layout-provider'
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
-import { Link } from "react-router-dom";
-import { PATHS } from "@/constant/paths";
-import { useMemo } from "react";
-import { useAppSelector } from "@/store/store";
+  SidebarRail,
+} from '@/components/ui/sidebar'
+// import { AppTitle } from './app-title'
+import { sidebarData } from './data/sidebar-data'
+import { NavGroup } from './nav-group'
+import { NavUser } from './nav-user'
+import { TeamSwitcher } from './team-switcher'
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useAppSelector((store) => store.auth);
-
-  const data = useMemo(() => {
-    return {
-      user: {
-        name: user?.names || "",
-        email: user?.identification || "",
-        avatar: "/avatars/shadcn.jpg",
-      },
-      navMain: [
-        {
-          title: "Dashboard",
-          url: "#",
-          icon: LayoutDashboard,
-        },
-      ],
-      configModules: [
-        {
-          title: "Maquinaria",
-          url: "#",
-          icon: Settings2,
-        },
-        {
-          title: "Permisos",
-          url: PATHS.OOO.INDEX,
-          icon: Settings2,
-        },
-      ],
-      masterModules: [
-        {
-          title: "Empleados",
-          url: PATHS.EMPLOYEES.INDEX,
-          icon: Users,
-        },
-        {
-          title: "Maquinaria",
-          url: PATHS.MACHINES,
-          icon: PackagePlus,
-        },
-      ],
-    };
-  }, [user]);
-
+export function AppSidebar() {
+  const { collapsible, variant } = useLayout()
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar collapsible={collapsible} variant={variant}>
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
-              <Link to={PATHS.HOME}>
-                <Factory className="h-5 w-5" />
-                <span className="text-base font-semibold">PPS</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <TeamSwitcher teams={sidebarData.teams} />
+
+        {/* Replace <TeamSwitch /> with the following <AppTitle />
+         /* if you want to use the normal app title instead of TeamSwitch dropdown */}
+        {/* <AppTitle /> */}
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavSecondary title="Configuración" items={data.configModules} />
-        <NavSecondary title="Maestros" items={data.masterModules} />
+        {sidebarData.navGroups.map((props) => (
+          <NavGroup key={props.title} {...props} />
+        ))}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
-  );
+  )
 }

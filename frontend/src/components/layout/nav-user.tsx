@@ -1,120 +1,133 @@
-import { LogOutIcon, MoreVerticalIcon } from "lucide-react";
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Link } from '@tanstack/react-router'
+import {
+  BadgeCheck,
+  Bell,
+  ChevronsUpDown,
+  CreditCard,
+  LogOut,
+} from 'lucide-react'
+import { useAuthStore } from '@/stores/auth-store'
+import useDialogState from '@/hooks/use-dialog-state'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu'
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
-import { useDispatch } from "react-redux";
-import { PATHS } from "@/constant/paths";
-import { logoutUser } from "@/store/features/auth";
-import { useNavigate } from "react-router-dom";
+} from '@/components/ui/sidebar'
+import { SignOutDialog } from '@/components/sign-out-dialog'
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string;
-    email: string;
-    avatar?: string;
-  };
-}) {
-  const { isMobile } = useSidebar();
+export function NavUser() {
+  const { isMobile } = useSidebar()
+  const [open, setOpen] = useDialogState()
 
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const { user } = useAuthStore((state) => state.auth)
 
-  function getAvatarFallback(name: string): string {
-    if (!name) return "??";
-    const words = name.trim().split(/\s+/);
-    if (words.length === 1) return words[0][0].toUpperCase();
-    return (words[0][0] + words[1][0]).toUpperCase();
+  const getInitials = () => {
+    if (!user) return ''
+
+    const lastNameInitials = user.last_names
+      .split(' ')
+      .map((word) => word[0].toUpperCase())
+      .join('')
+    const nameInitials = user.names
+      .split(' ')
+      .map((word) => word[0].toUpperCase())
+      .join('')
+
+    return `${nameInitials}${lastNameInitials}`
   }
 
-  const handleLogout = () => {
-    dispatch(logoutUser());
-    navigate(PATHS.LOGIN);
-  };
-
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <Avatar className="h-8 w-8 rounded-lg grayscale">
-                {user.avatar && (
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                )}
-                <AvatarFallback className="rounded-lg">
-                  {getAvatarFallback(user.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {user.email}
-                </span>
-              </div>
-              <MoreVerticalIcon className="ml-auto size-4" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
-            align="end"
-            sideOffset={4}
-          >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+    <>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <SidebarMenuButton
+                size='lg'
+                className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+              >
+                <Avatar className='h-8 w-8 rounded-lg'>
+                  <AvatarFallback className='rounded-lg'>
+                    {getInitials()}
+                  </AvatarFallback>
                 </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {user.email}
+                <div className='grid flex-1 text-start text-sm leading-tight'>
+                  <span className='truncate font-semibold'>
+                    {user?.names} {user?.last_names}
                   </span>
+                  <span className='truncate text-xs'>{user?.role}</span>
                 </div>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {/* <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <UserCircleIcon />
-                Account
+                <ChevronsUpDown className='ms-auto size-4' />
+              </SidebarMenuButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className='w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg'
+              side={isMobile ? 'bottom' : 'right'}
+              align='end'
+              sideOffset={4}
+            >
+              <DropdownMenuLabel className='p-0 font-normal'>
+                <div className='flex items-center gap-2 px-1 py-1.5 text-start text-sm'>
+                  <Avatar className='h-8 w-8 rounded-lg'>
+                    <AvatarFallback className='rounded-lg'>
+                      {getInitials()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className='grid flex-1 text-start text-sm leading-tight'>
+                    <span className='truncate font-semibold'>
+                      {user?.names} {user?.last_names}
+                    </span>
+                    <span className='truncate text-xs'>{user?.role}</span>
+                  </div>
+                </div>
+              </DropdownMenuLabel>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuGroup>
+                <DropdownMenuItem asChild>
+                  <Link to='/settings/account'>
+                    <BadgeCheck />
+                    Cuenta
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to='/settings'>
+                    <CreditCard />
+                    Facturación
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to='/settings/notifications'>
+                    <Bell />
+                    Notificaciones
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem onClick={() => setOpen(true)}>
+                <LogOut />
+                Cerrar sesión
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCardIcon />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <BellIcon />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator /> */}
-            <DropdownMenuItem onClick={handleLogout}>
-              <LogOutIcon />
-              Cerrar sesión
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
-    </SidebarMenu>
-  );
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarMenuItem>
+      </SidebarMenu>
+
+      <SignOutDialog open={!!open} onOpenChange={setOpen} />
+    </>
+  )
 }

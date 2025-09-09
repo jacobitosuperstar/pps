@@ -21,19 +21,11 @@ services:
   # Frontend App
   frontend:
     build:
-      context: .
-      dockerfile: ./frontend/Dockerfile
+      context: ./Frontend
+      dockerfile: Dockerfile
     ports:
-      - "5173:5173"
-    expose:
-      - "5173"
+      - "80:80"
     networks:
       - server_network
-    volumes:
-      - ./frontend/:/app/
-    command: >
-      sh -c "
-      npm run dev
-      "
     depends_on:
       - backend
