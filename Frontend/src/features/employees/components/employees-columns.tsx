@@ -1,5 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table'
-import { type Employee } from '@/api/employees/queries/employees'
+import { type Employee } from '@/api/employees/queries/get-employees'
 import { roles } from '../data/data'
 import { DataTableRowActions } from './data-table-row-actions'
 

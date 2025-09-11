@@ -1,5 +1,5 @@
 import apiClient from '../../client'
-import type { Employee } from '../queries/employees'
+import type { Employee } from '../queries/get-employees'
 
 export interface CreateEmployeePayload {
   identification: string

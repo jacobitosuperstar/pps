@@ -1,7 +1,7 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
 import { Trash2, UserPen } from 'lucide-react'
-import { type Employee } from '@/api/employees/queries/get-employees'
+import { type Client } from '@/api/clients/queries/get-clients'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -11,14 +11,14 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useEmployee } from './employees-provider'
+import { useClient } from './clients-provider'
 
 type DataTableRowActionsProps = {
-  row: Row<Employee>
+  row: Row<Client>
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
-  const { setOpen, setCurrentRow } = useEmployee()
+  const { setOpen, setCurrentRow } = useClient()
   return (
     <>
       <DropdownMenu modal={false}>

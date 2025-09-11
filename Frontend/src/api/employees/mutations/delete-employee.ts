@@ -1,5 +1,5 @@
 import apiClient from '../../client'
-import type { Employee } from '../queries/employees'
+import type { Employee } from '../queries/get-employees'
 
 const deleteEmployeeMutation = async (payload: string) => {
   const { data } = await apiClient.delete<Employee>('/employees/' + payload)

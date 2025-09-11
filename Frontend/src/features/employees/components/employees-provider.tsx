@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { type Employee } from '@/api/employees/queries/employees'
+import { type Employee } from '@/api/employees/queries/get-employees'
 import useDialogState from '@/hooks/use-dialog-state'
 
 type EmployeeDialogType = 'invite' | 'add' | 'edit' | 'delete'

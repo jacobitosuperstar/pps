@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from 'clsx'
+import { getCountries, getCountryCallingCode } from 'react-phone-number-input'
 import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
@@ -57,4 +58,47 @@ export function getPageNumbers(currentPage: number, totalPages: number) {
   }
 
   return rangeWithDots
+}
+
+export function formatDateCell(
+  value: string | Date,
+  options: Intl.DateTimeFormatOptions = {}
+): string {
+  if (!value) return ''
+
+  const date = value instanceof Date ? value : new Date(value)
+
+  return new Intl.DateTimeFormat('es-CO', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    ...options,
+  }).format(date)
+}
+
+export function getCountryInfoByCode(phoneCode: string) {
+  // eliminamos el "+"
+  const code = phoneCode.replace('+', '')
+
+  for (const country of getCountries()) {
+    const callingCode = getCountryCallingCode(country)
+    if (callingCode === code) {
+      return {
+        country, // "CO"
+        name: new Intl.DisplayNames(['es'], { type: 'region' }).of(country), // "Colombia"
+        flag: getFlagEmoji(country), // "🇨🇴"
+        callingCode: '+' + callingCode, // "+57"
+      }
+    }
+  }
+  return null
+}
+
+function getFlagEmoji(countryCode: string) {
+  return countryCode
+    .toUpperCase()
+    .replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)))
 }

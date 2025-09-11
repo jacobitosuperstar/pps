@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import getEmployeesQuery from '@/api/employees/queries/get-employees'
+import getClientsQuery from '@/api/clients/queries/get-clients'
 import { useTableUrlState } from '@/hooks/use-table-url-state'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { DataTable } from '@/components/data-table/data-table'
@@ -9,14 +9,14 @@ import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { employeesColumns } from './components/employees-columns'
-import { EmployeeDialogs } from './components/employees-dialogs'
-import { EmployeesPrimaryButtons } from './components/employees-primary-buttons'
-import { EmployeeProvider } from './components/employees-provider'
+import { clientsColumns } from './components/clients-columns'
+import { ClientDialogs } from './components/clients-dialogs'
+import { ClientsPrimaryButtons } from './components/clients-primary-buttons'
+import { ClientProvider } from './components/clients-provider'
 
-const route = getRouteApi('/_authenticated/employees/')
+const route = getRouteApi('/_authenticated/clients/')
 
-export function Employees() {
+export function Clients() {
   // router
   const search = route.useSearch()
   const navigate = route.useNavigate()
@@ -28,24 +28,20 @@ export function Employees() {
     isFetching,
   } = useQuery({
     queryKey: [
-      'employees',
-      search.identification,
-      search.last_names,
+      'clients',
+      search.client_name,
+      search.client_email,
+      search.client_phone_number,
       search.limit,
-      search.names,
       search.offset,
-      search.role,
-      search.birthday,
     ],
     queryFn: () =>
-      getEmployeesQuery({
-        identification: search.identification,
-        last_names: search.last_names,
+      getClientsQuery({
+        client_name: search.client_name,
+        client_email: search.client_email,
+        client_phone_number: search.client_phone_number,
         limit: search.limit,
-        names: search.names,
         offset: search.offset,
-        role: search.role,
-        birthday: search.birthday,
       }),
   })
 
@@ -64,7 +60,7 @@ export function Employees() {
 
   const table = useReactTable({
     data: data.results,
-    columns: employeesColumns,
+    columns: clientsColumns,
     state: {
       pagination,
       columnFilters,
@@ -77,7 +73,7 @@ export function Employees() {
   })
 
   return (
-    <EmployeeProvider>
+    <ClientProvider>
       <Header fixed>
         <div className='ms-auto flex items-center space-x-4'>
           <ThemeSwitch />
@@ -90,25 +86,25 @@ export function Employees() {
         <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
           <div>
             <h2 className='text-2xl font-bold tracking-tight'>
-              Listado de Empleados
+              Listado de Clientes
             </h2>
             <p className='text-muted-foreground'>
-              Administra los empleados y sus roles aqui.
+              Administra los clientes aqui.
             </p>
           </div>
 
-          <EmployeesPrimaryButtons />
+          <ClientsPrimaryButtons />
         </div>
         <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
           <DataTable
             table={table}
-            columns={employeesColumns}
+            columns={clientsColumns}
             isLoading={isLoading}
             isFetching={isFetching}
           />
         </div>
       </Main>
-      <EmployeeDialogs />
-    </EmployeeProvider>
+      <ClientDialogs />
+    </ClientProvider>
   )
 }

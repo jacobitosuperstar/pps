@@ -3,10 +3,11 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { queryClient } from '@/main'
+import { isValidPhoneNumber, parsePhoneNumber } from 'react-phone-number-input'
 import { toast } from 'sonner'
-import createEmployeeMutation from '@/api/employees/mutations/create-employee'
-import updateEmployeeMutation from '@/api/employees/mutations/update-employee'
-import { type Employee } from '@/api/employees/queries/get-employees'
+import createClientMutation from '@/api/clients/mutations/create-client'
+import updateClientMutation from '@/api/clients/mutations/update-client'
+import { type Client } from '@/api/clients/queries/get-clients'
 import {
   Dialog,
   DialogContent,
@@ -25,85 +26,110 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { LoadingButton } from '@/components/ui/loading-button'
-import { PasswordInput } from '@/components/password-input'
-import { SelectDropdown } from '@/components/select-dropdown'
-import { roles } from '../data/data'
+import { PhoneInput } from '@/components/ui/phone-input'
 
 const formSchema = z.object({
-  identification: z.string().min(1, 'Identificación es requerida.'),
-  names: z.string().min(1, 'Nombres es requerido.'),
-  last_names: z.string().min(1, 'Apellidos es requerido.'),
-  role: z.string().min(1, 'Rol es requerido.'),
-  birthday: z.string().min(1, 'Cumpleaños es requerido.'),
-  password: z
-    .string()
-    .min(8, 'La contraseña debe tener al menos 8 caracteres.'),
+  client_id: z.string().min(1, 'Documento de identidad es requerido.'),
+  client_name: z.string().min(1, 'Nombre del cliente es requerido.'),
+  client_email: z.email('Correo inválido.'),
+  phone: z.string().refine(isValidPhoneNumber, {
+    message: 'Número de teléfono inválido.',
+  }),
 })
 
-type EmployeeForm = z.infer<typeof formSchema>
+type ClientForm = z.infer<typeof formSchema>
 
-type EmployeeActionDialogProps = {
-  currentRow?: Employee
+type ClientActionDialogProps = {
+  currentRow?: Client
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function EmployeesActionDialog({
+export function ClientsActionDialog({
   currentRow,
   open,
   onOpenChange,
-}: EmployeeActionDialogProps) {
+}: ClientActionDialogProps) {
   const isEdit = !!currentRow
-  const form = useForm<EmployeeForm>({
+
+  const phone = currentRow?.client_phone_number
+    ? `${currentRow.client_phone_code}${currentRow.client_phone_number}`
+    : ''
+
+  const form = useForm<ClientForm>({
     resolver: zodResolver(formSchema),
     defaultValues: isEdit
       ? {
-          identification: currentRow?.identification ?? '',
-          names: currentRow?.names ?? '',
-          last_names: currentRow?.last_names ?? '',
-          role: currentRow?.role ?? '',
-          birthday: currentRow?.birthday ?? '',
-          password: '',
+          client_id: currentRow?.client_id ?? '',
+          client_name: currentRow?.client_name ?? '',
+          client_email: currentRow?.client_email ?? '',
+          phone: phone,
         }
       : {
-          identification: '',
-          names: '',
-          last_names: '',
-          role: '',
-          birthday: '',
-          password: '',
+          client_id: '',
+          client_name: '',
+          client_email: '',
+          phone: '',
         },
   })
 
   const createMutation = useMutation({
-    mutationFn: (payload: EmployeeForm) => createEmployeeMutation(payload),
+    mutationFn: (payload: ClientForm) => {
+      const parsed = parsePhoneNumber(payload.phone)
+
+      if (!parsed) {
+        throw new Error('Número de teléfono inválido.')
+      }
+
+      return createClientMutation({
+        client_id: payload.client_id,
+        client_name: payload.client_name,
+        client_email: payload.client_email,
+        client_phone_code: '+' + parsed.countryCallingCode,
+        client_phone_number: parsed.nationalNumber,
+      })
+    },
     onSuccess: () => {
-      toast.success('Empleado creado exitosamente')
+      toast.success('Cliente creado exitosamente')
       form.reset()
-      queryClient.invalidateQueries({ queryKey: ['employees'] })
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
       onOpenChange(false)
     },
     onError: () => {
-      toast.error('Error al crear el empleado')
+      toast.error('Error al crear el cliente')
     },
   })
 
   const updateMutation = useMutation({
-    mutationFn: (payload: EmployeeForm) => updateEmployeeMutation(payload),
+    mutationFn: (payload: ClientForm) => {
+      const parsed = parsePhoneNumber(payload.phone)
+
+      if (!parsed) {
+        throw new Error('Número de teléfono inválido.')
+      }
+
+      return updateClientMutation({
+        client_id: payload.client_id,
+        client_name: payload.client_name,
+        client_email: payload.client_email,
+        client_phone_code: '+' + parsed.countryCallingCode,
+        client_phone_number: parsed.nationalNumber,
+      })
+    },
     onSuccess: () => {
-      toast.success('Empleado actualizado exitosamente')
+      toast.success('Cliente actualizado exitosamente')
       form.reset()
-      queryClient.invalidateQueries({ queryKey: ['employees'] })
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
       onOpenChange(false)
     },
     onError: () => {
-      toast.error('Error al crear el empleado')
+      toast.error('Error al actualizar el cliente')
     },
   })
 
   const isLoading = createMutation.isPending || updateMutation.isPending
 
-  const onSubmit = (values: EmployeeForm) => {
+  const onSubmit = (values: ClientForm) => {
     if (isEdit) {
       updateMutation.mutate(values)
     } else {
@@ -122,29 +148,29 @@ export function EmployeesActionDialog({
       <DialogContent className='sm:max-w-lg'>
         <DialogHeader className='text-start'>
           <DialogTitle>
-            {isEdit ? 'Editar Empleado' : 'Agregar Nuevo Empleado'}
+            {isEdit ? 'Editar Cliente' : 'Agregar Nuevo Cliente'}
           </DialogTitle>
           <DialogDescription>
             {isEdit
-              ? 'Actualiza la información del empleado aquí. '
-              : 'Crea un nuevo empleado aquí. '}
+              ? 'Actualiza la información del cliente aquí.'
+              : 'Crea un nuevo cliente aquí.'}{' '}
             Haz clic en guardar cuando termines.
           </DialogDescription>
         </DialogHeader>
         <div className='h-[26.25rem] w-[calc(100%+0.75rem)] overflow-y-auto py-1 pe-3'>
           <Form {...form}>
             <form
-              id='user-form'
+              id='client-form'
               onSubmit={form.handleSubmit(onSubmit)}
               className='space-y-4 px-0.5'
             >
               <FormField
                 control={form.control}
-                name='identification'
+                name='client_id'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>
-                      Identificación
+                      Documento
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -161,16 +187,16 @@ export function EmployeesActionDialog({
 
               <FormField
                 control={form.control}
-                name='names'
+                name='client_name'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>
-                      Nombres
+                      Nombre
                     </FormLabel>
                     <FormControl>
                       <Input
                         disabled={isLoading}
-                        placeholder='Juan'
+                        placeholder='Juan Perez'
                         className='col-span-4'
                         {...field}
                       />
@@ -182,16 +208,17 @@ export function EmployeesActionDialog({
 
               <FormField
                 control={form.control}
-                name='last_names'
+                name='client_email'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>
-                      Apellidos
+                      Correo
                     </FormLabel>
                     <FormControl>
                       <Input
                         disabled={isLoading}
-                        placeholder='Perez'
+                        type='email'
+                        placeholder='correo@ejemplo.com'
                         className='col-span-4'
                         {...field}
                       />
@@ -203,59 +230,16 @@ export function EmployeesActionDialog({
 
               <FormField
                 control={form.control}
-                name='role'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>Rol</FormLabel>
-                    <SelectDropdown
-                      defaultValue={field.value}
-                      onValueChange={field.onChange}
-                      disabled={isLoading}
-                      placeholder='Selecciona un rol'
-                      className='col-span-4'
-                      items={roles.map(({ label, value }) => ({
-                        label,
-                        value,
-                      }))}
-                    />
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name='birthday'
+                name='phone'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>
-                      Cumpleaños
+                      Teléfono
                     </FormLabel>
                     <FormControl>
-                      <Input
+                      <PhoneInput
                         disabled={isLoading}
-                        type='date'
-                        className='col-span-4'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name='password'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>
-                      Contraseña
-                    </FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        disabled={isLoading}
-                        placeholder='e.g., S3cur3P@ssw0rd'
+                        placeholder='3001234567'
                         className='col-span-4'
                         {...field}
                       />
@@ -270,7 +254,7 @@ export function EmployeesActionDialog({
         <DialogFooter>
           <LoadingButton
             type='submit'
-            form='user-form'
+            form='client-form'
             loading={isLoading}
             disabled={isLoading}
           >
