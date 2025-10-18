@@ -163,64 +163,7 @@ def create_employee(
         )
 
 
-# --- Get Employee by Identification ---
-@router.get(
-    "/{identification}",
-    response_model=EmployeeRead,
-)
-def get_employee(
-    identification: str,
-    token=Depends(get_current_user),
-    session: Session = Depends(get_session),
-) -> DBEmployee:
-    require_roles(token, [RoleChoices.HR, RoleChoices.MANAGEMENT])
-    emp: Optional[DBEmployee] = session.query(
-        DBEmployee
-    ).filter_by(
-        identification=identification
-    ).first()
-    if not emp:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Employee not found")
-    return emp
-
-
-# --- Update Employee (HR/Management only) ---
-@router.put(
-    "/{identification}",
-    response_model=EmployeeRead,
-)
-def update_employee(
-    identification: str,
-    payload: EmployeeUpdate,
-    token=Depends(get_current_user),
-    session: Session = Depends(get_session),
-) -> DBEmployee:
-    require_roles(token, [RoleChoices.HR, RoleChoices.MANAGEMENT])
-    emp: Optional[DBEmployee] = session.query(
-        DBEmployee
-    ).filter_by(
-        identification=identification
-    ).first()
-    if not emp:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Employee not found")
-    update_data: dict = payload.model_dump(exclude_unset=True)
-    emp.update_instance(session, **update_data)
-    return emp
-
-# --- Delete Employee (HR/Management only, soft delete) ---
-@router.delete("/{identification}")
-def delete_employee(
-    identification: str,
-    token=Depends(get_current_user),
-    session: Session = Depends(get_session),
-) -> Response:
-    require_roles(token, [RoleChoices.HR, RoleChoices.MANAGEMENT])
-    emp = session.query(DBEmployee).filter_by(identification=identification).first()
-    if not emp:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Employee not found")
-    emp.delete_instance(session, soft_delete=True)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
-
+# --- Get Roles (must be before /{identification}) ---
 @router.get("/roles")
 def get_roles() -> dict:
     return {
@@ -228,6 +171,7 @@ def get_roles() -> dict:
             for role in RoleChoices
     }
 
+# --- Get OOO Types (must be before /{identification}) ---
 @router.get("/ooo_types")
 def get_ooo_types() -> dict:
     return {
@@ -235,7 +179,7 @@ def get_ooo_types() -> dict:
         for ooo in OOOTypes
     }
 
-# --- List OOO ---
+# --- List OOO (must be before /{identification}) ---
 @router.get(
     "/ooo/",
     response_model=PaginatedOOOs,
@@ -345,4 +289,64 @@ def delete_ooo(
     if not ooo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="OOO not found")
     ooo.delete_instance(session, soft_delete=True)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# --- Get Employee by Identification ---
+@router.get(
+    "/{identification}",
+    response_model=EmployeeRead,
+)
+def get_employee(
+    identification: str,
+    token=Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> DBEmployee:
+    require_roles(token, [RoleChoices.HR, RoleChoices.MANAGEMENT])
+    emp: Optional[DBEmployee] = session.query(
+        DBEmployee
+    ).filter_by(
+        identification=identification
+    ).first()
+    if not emp:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Employee not found")
+    return emp
+
+
+# --- Update Employee (HR/Management only) ---
+@router.put(
+    "/{identification}",
+    response_model=EmployeeRead,
+)
+def update_employee(
+    identification: str,
+    payload: EmployeeUpdate,
+    token=Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> DBEmployee:
+    require_roles(token, [RoleChoices.HR, RoleChoices.MANAGEMENT])
+    emp: Optional[DBEmployee] = session.query(
+        DBEmployee
+    ).filter_by(
+        identification=identification
+    ).first()
+    if not emp:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Employee not found")
+    update_data: dict = payload.model_dump(exclude_unset=True)
+    emp.update_instance(session, **update_data)
+    return emp
+
+
+# --- Delete Employee (HR/Management only, soft delete) ---
+@router.delete("/{identification}")
+def delete_employee(
+    identification: str,
+    token=Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> Response:
+    require_roles(token, [RoleChoices.HR, RoleChoices.MANAGEMENT])
+    emp = session.query(DBEmployee).filter_by(identification=identification).first()
+    if not emp:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Employee not found")
+    emp.delete_instance(session, soft_delete=True)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

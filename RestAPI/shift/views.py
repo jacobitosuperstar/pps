@@ -129,7 +129,7 @@ def create_shift(
             RoleChoices.PRODUCTION_MANAGER
         ],
     )
-    
+
     try:
         # Validate machine exists
         machine = session.query(DBMachine).filter_by(id=payload.machine_id).first()
@@ -202,7 +202,7 @@ def create_shift(
         # Create shift with generated production code
         start_dt = payload.start_datetime
         end_dt = payload.end_datetime
-        
+
         # Use create_object method now that Base model is fixed
         db_shift = DBShift.create_object(
             session=session,
@@ -218,7 +218,7 @@ def create_shift(
             description=payload.description,
             notes=payload.notes
         )
-        
+
         return db_shift
     except Exception as e:
         session.rollback()
@@ -226,6 +226,110 @@ def create_shift(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error creating shift: {str(e)}"
         )
+
+
+# ============================================================================
+# SPECIALIZED ENDPOINTS (must be before /{shift_id})
+# ============================================================================
+
+
+@router.get("/machine/{machine_id}/shifts", response_model=List[ShiftRead])
+def get_machine_shifts(
+    machine_id: int,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    shift_type: Optional[ShiftType] = None,
+    token=Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> List[ShiftRead]:
+    """Get all shifts for a specific machine within a date range."""
+    require_roles(
+        token=token,
+        allowed_roles=[
+            RoleChoices.MANAGEMENT,
+            RoleChoices.PRODUCTION_MANAGER,
+            RoleChoices.PRODUCTION
+        ],
+    )
+
+    # Validate machine exists
+    machine = session.query(DBMachine).filter_by(id=machine_id).first()
+    if not machine:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Machine not found",
+        )
+
+    query = (
+        session.query(DBShift)
+        .options(
+            selectinload(DBShift.machine),
+            selectinload(DBShift.employee),
+            selectinload(DBShift.production_order),
+            selectinload(DBShift.product)
+        )
+        .filter_by(machine_id=machine_id, deleted=False)
+    )
+
+    # Apply date filters if provided
+    if date_from:
+        query = query.filter(DBShift.start_datetime >= date_from)
+    if date_to:
+        query = query.filter(DBShift.end_datetime <= date_to)
+
+    # Apply shift type filter if provided
+    if shift_type:
+        query = query.filter(DBShift.shift_type == shift_type)
+
+    shifts = query.order_by(DBShift.start_datetime).all()
+    return [ShiftRead.model_validate(s) for s in shifts]
+
+
+@router.get("/employee/{employee_id}/shifts", response_model=List[ShiftRead])
+def get_employee_shifts(
+    employee_id: str,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    token=Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> List[ShiftRead]:
+    """Get all shifts for a specific employee within a date range."""
+    require_roles(
+        token=token,
+        allowed_roles=[
+            RoleChoices.MANAGEMENT,
+            RoleChoices.PRODUCTION_MANAGER,
+            RoleChoices.HR
+        ],
+    )
+
+    # Validate employee exists
+    employee = session.query(DBEmployee).filter_by(identification=employee_id).first()
+    if not employee:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Employee not found",
+        )
+
+    query = (
+        session.query(DBShift)
+        .options(
+            selectinload(DBShift.machine),
+            selectinload(DBShift.employee),
+            selectinload(DBShift.production_order),
+            selectinload(DBShift.product)
+        )
+        .filter_by(employee_id=employee_id, deleted=False)
+    )
+
+    # Apply date filters if provided
+    if date_from:
+        query = query.filter(DBShift.start_datetime >= date_from)
+    if date_to:
+        query = query.filter(DBShift.end_datetime <= date_to)
+
+    shifts = query.order_by(DBShift.start_datetime).all()
+    return [ShiftRead.model_validate(s) for s in shifts]
 
 
 @router.get("/{shift_id}", response_model=ShiftRead)
@@ -355,107 +459,3 @@ def delete_shift(
 
     shift.delete_instance(session=session)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-# ============================================================================
-# SPECIALIZED ENDPOINTS
-# ============================================================================
-
-
-@router.get("/machine/{machine_id}/shifts", response_model=List[ShiftRead])
-def get_machine_shifts(
-    machine_id: int,
-    date_from: Optional[str] = None,
-    date_to: Optional[str] = None,
-    shift_type: Optional[ShiftType] = None,
-    token=Depends(get_current_user),
-    session: Session = Depends(get_session),
-) -> List[ShiftRead]:
-    """Get all shifts for a specific machine within a date range."""
-    require_roles(
-        token=token,
-        allowed_roles=[
-            RoleChoices.MANAGEMENT,
-            RoleChoices.PRODUCTION_MANAGER,
-            RoleChoices.PRODUCTION
-        ],
-    )
-
-    # Validate machine exists
-    machine = session.query(DBMachine).filter_by(id=machine_id).first()
-    if not machine:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Machine not found",
-        )
-
-    query = (
-        session.query(DBShift)
-        .options(
-            selectinload(DBShift.machine),
-            selectinload(DBShift.employee),
-            selectinload(DBShift.production_order),
-            selectinload(DBShift.product)
-        )
-        .filter_by(machine_id=machine_id, deleted=False)
-    )
-
-    # Apply date filters if provided
-    if date_from:
-        query = query.filter(DBShift.start_datetime >= date_from)
-    if date_to:
-        query = query.filter(DBShift.end_datetime <= date_to)
-    
-    # Apply shift type filter if provided
-    if shift_type:
-        query = query.filter(DBShift.shift_type == shift_type)
-
-    shifts = query.order_by(DBShift.start_datetime).all()
-    return [ShiftRead.model_validate(s) for s in shifts]
-
-
-@router.get("/employee/{employee_id}/shifts", response_model=List[ShiftRead])
-def get_employee_shifts(
-    employee_id: str,
-    date_from: Optional[str] = None,
-    date_to: Optional[str] = None,
-    token=Depends(get_current_user),
-    session: Session = Depends(get_session),
-) -> List[ShiftRead]:
-    """Get all shifts for a specific employee within a date range."""
-    require_roles(
-        token=token,
-        allowed_roles=[
-            RoleChoices.MANAGEMENT,
-            RoleChoices.PRODUCTION_MANAGER,
-            RoleChoices.HR
-        ],
-    )
-
-    # Validate employee exists
-    employee = session.query(DBEmployee).filter_by(identification=employee_id).first()
-    if not employee:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Employee not found",
-        )
-
-    query = (
-        session.query(DBShift)
-        .options(
-            selectinload(DBShift.machine),
-            selectinload(DBShift.employee),
-            selectinload(DBShift.production_order),
-            selectinload(DBShift.product)
-        )
-        .filter_by(employee_id=employee_id, deleted=False)
-    )
-
-    # Apply date filters if provided
-    if date_from:
-        query = query.filter(DBShift.start_datetime >= date_from)
-    if date_to:
-        query = query.filter(DBShift.end_datetime <= date_to)
-
-    shifts = query.order_by(DBShift.start_datetime).all()
-    return [ShiftRead.model_validate(s) for s in shifts]
