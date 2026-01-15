@@ -23,6 +23,7 @@ from .models import (
     ProductionOrder,
     ProductionOrderRead,
     ProductionOrderUpdate,
+    ProductionOrderStatus,
     PaginatedProductionOrders,
     DBProductionOrderItem,
     ProductionOrderItem,

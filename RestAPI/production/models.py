@@ -1,5 +1,6 @@
 from typing import Optional, List
 from datetime import datetime, date
+from enum import Enum
 
 from sqlalchemy import Column, String, Integer, Text, Date, ForeignKey
 from sqlalchemy.orm import relationship
@@ -8,6 +9,15 @@ from pydantic import BaseModel, Field, ConfigDict
 from base.models import Base, PaginatedElements
 from clients.models import DBClient
 from products.models import DBProduct
+
+
+class ProductionOrderStatus(str, Enum):
+    """Status of a production order."""
+    QUEUED = "queued"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+    ON_HOLD = "on_hold"
 
 
 class DBSaleOrder(Base):
@@ -120,6 +130,12 @@ class DBProductionOrder(Base):
         nullable=False,
         index=True,
     )
+    status = Column(
+        String,
+        nullable=False,
+        default=ProductionOrderStatus.QUEUED.value,
+        index=True,
+    )
     notes = Column(
         Text,
         nullable=True,
@@ -130,10 +146,12 @@ class DBProductionOrder(Base):
 
 
 class ProductionOrder(BaseModel):
+    status: ProductionOrderStatus = Field(default=ProductionOrderStatus.QUEUED, description="Production order status")
     notes: Optional[str] = Field(None, description="Notes from the commercial")
 
 
 class ProductionOrderUpdate(BaseModel):
+    status: Optional[ProductionOrderStatus] = Field(None, description="Production order status")
     notes: Optional[str] = Field(None, description="Notes from the commercial")
 
 
