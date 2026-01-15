@@ -64,6 +64,11 @@ export const sidebarData: SidebarData = {
           url: '/clients',
           icon: Users,
         },
+        {
+          title: 'Máquinas',
+          url: '/machines',
+          icon: Monitor,
+        },
       ],
     },
     {
